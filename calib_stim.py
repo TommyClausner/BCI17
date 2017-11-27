@@ -1,8 +1,52 @@
+#!/usr/bin/env python3
+# Set up imports and paths
+bufferpath = "../../dataAcq/buffer/python"
+sigProcPath = "../signalProc"
+import pygame, sys
+from pygame.locals import *
+from time import sleep, time
+import os
 import matplotlib
 import numpy as np
 matplotlib.rcParams['toolbar']='None'
-import matplotlib.pyplot as plt
-from psychopy import visual, core, event
+from psychopy import visual, core
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
+import FieldTrip
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
+
+## CONFIGURABLE VARIABLES
+# Connection options of fieldtrip, hostname and port of the computer running the fieldtrip buffer.
+hostname='localhost'
+port=1972
+
+## init connection to the buffer
+timeout=5000
+ftc = FieldTrip.Client()
+# Wait until the buffer connects correctly and returns a valid header
+hdr = None
+while hdr is None :
+    print(('Trying to connect to buffer on %s:%i ...'%(hostname,port)))
+    try:
+        ftc.connect(hostname, port)
+        print('\nConnected - trying to read header...')
+        hdr = ftc.getHeader()
+    except IOError:
+        pass
+
+    if hdr is None:
+        print('Invalid Header... waiting')
+        sleep(1)
+    else:
+        print(hdr)
+        print((hdr.labels))
+fSample = hdr.fSample
+
+def sendEvent(event_type, event_value=1, sample=-1):
+    e = FieldTrip.Event()
+    e.type=event_type
+    e.value=event_value
+    e.sample=sample
+    ftc.putEvents(e)
 
 class GOL(object):
 
@@ -73,9 +117,9 @@ class GOL(object):
 
         gol = self.gol_old+0
         offsets=self.offsets+0
-        alifeind=np.where(gol==1)[0]
-        size_idx=len(alifeind)
-        neigharrayidx=np.tile(alifeind, (9, 1)).transpose()+np.tile(offsets[0], (size_idx, 1))
+        livingidx=np.where(gol==1)[0]
+        size_idx=len(livingidx)
+        neigharrayidx=np.tile(livingidx, (9, 1)).transpose()+np.tile(offsets[0], (size_idx, 1))
         neigharrayidx[neigharrayidx < 0] = 0
         neigharrayidx[neigharrayidx >= (self.gridsize_**2)] = 0
 
@@ -83,7 +127,7 @@ class GOL(object):
         killidx=(neigharray.sum(1)<3) | (neigharray.sum(1)>4)
         randkillidx=np.random.rand(size_idx)<self.god
 
-        offspridx=np.tile(alifeind, (9, 1)).transpose()[:,range(4)+range(5,9)]+np.tile(offsets[0][range(4)+range(5,9)], (size_idx, 1))
+        offspridx=np.tile(livingidx, (9, 1)).transpose()[:,range(4)+range(5,9)]+np.tile(offsets[0][range(4)+range(5,9)], (size_idx, 1))
         offspridx=offspridx.flatten()
         offspridx[offspridx < 0] = 0
         offspridx[offspridx >= (self.gridsize_ ** 2)] = 0
@@ -99,7 +143,7 @@ class GOL(object):
         aliveidx = (neigharray.sum(1) == 3)
         randaliveidx = np.random.rand(size_idx) < self.god
 
-        gol[alifeind[killidx+randkillidx]] = 0
+        gol[livingidx[killidx+randkillidx]] = 0
         gol[offspridx[aliveidx+randaliveidx]] = 1
 
         self.gol_old=gol+0
@@ -107,123 +151,107 @@ class GOL(object):
 
 
 grid_size=100
-gol=GOL(grid_size)
+window_size=800
+
+freq=15 # (note 30Hz = hardware max, because: turn pixel on / off = 1 frame -> 30Hz flicker needs 60 frames/s)
+freq2=10
+
+trialtime=4.5 # time per trial
+numtrials_per_cond=20
+
+instructions=['<','>']
+
+#instructions=['<','+','>']
+
+#values_=['2 RH','99 Rest','1 LH']
+values_=['2 RH','1 LH']
+
+#### Using PsychoPy and pygame ####
+
+mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
+
+win_s=mywin.size
+
+pattern1 = visual.ImageStim(win=mywin, name='pattern1',units='pix',size=[win_s[0],win_s[1]-win_s[0]/8],pos=(0,win_s[0]/8))
+pattern2 = visual.Circle(win=mywin,pos=[win_s[0]/2-win_s[0]/10+10,-win_s[1]/2+win_s[1]/10],radius=win_s[0]/16, edges=32,fillColor=[1,-1,-1],lineColor=[-1,-1,-1],units='pix')
+pattern3 = visual.Circle(win=mywin,pos=[-win_s[0]/2+win_s[0]/10-10,-win_s[1]/2+win_s[1]/10],radius=win_s[0]/16, edges=32,fillColor=[-1,-1,1],lineColor=[-1,-1,-1],units='pix')
+pattern4 = visual.ShapeStim(win=mywin,vertices=([-win_s[0]/2, -(win_s[1]/2-win_s[1]/5-10)], [-win_s[0]/2, -(win_s[1]/2-win_s[1]/5-9)],[win_s[0]/2, -(win_s[1]/2-win_s[1]/5-9)], [win_s[0]/2, -(win_s[1]/2-win_s[1]/5-10)] ),lineColor=[1,1,1],units='pix')
+
+pattern5 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='+',color=[1, 1, 1],units='pix',height=win_s[0]/8)
+pattern6 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='',color=[1, 1, 1],units='pix',height=win_s[0]/8)
+pattern7 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='',color=[1, 1, 1],units='pix',height=win_s[0]/8)
 
 
-#### Using matplotlib ####
-
-# data_=gol().reshape(grid_size,grid_size)+0
-#
-# arrow_size=round(grid_size/6)
-#
-# offset_X=np.round(grid_size*0.25)+1
-# offset_Y=-grid_size*0.2
-#
-# fig, ax = plt.subplots()
-# LA=ax.arrow(offset_X, offset_Y, -0.00001, 0, head_width=arrow_size, head_length=arrow_size, fc='b', ec='b')
-# RA=ax.arrow(offset_X+grid_size/2-np.round(grid_size/16), offset_Y, 0.00001, 0, head_width=arrow_size, head_length=arrow_size, fc='r', ec='r')
-# plt.set_cmap('gray')
-# fig.set_facecolor('k')
-# ax.set_facecolor('k')
-# plt.xlim((0,grid_size-1))
-# plt.ylim((-grid_size*0.2-arrow_size,grid_size-1))
-# ax.get_xaxis().set_visible(False)
-# ax.get_yaxis().set_visible(False)
-# line = ax.imshow(data_)
-# freq=8
-#
-# dur=1./freq/2.
-# start_time1 = time.time()
-# start_time2 = time.time()
-# start_time3 = time.time()
-# n=1
-# fig.tight_layout()
-# plt.draw()
-# plt.show(block=False)
-# plt.pause(1)
-#
-# axbackground = fig.canvas.copy_from_bbox(ax.bbox)
-#
-# while True:
-#
-#     line.set_array(gol().reshape(grid_size, grid_size).astype('int') + 0)
-#
-#     if ((time.time()-start_time1)>(dur*0.4)):
-#
-#         if (dur*0.5-(time.time()-start_time1))>0:
-#             time.sleep(dur*0.5-(time.time()-start_time1))
-#         start_time1 = time.time()
-#         print(time.time() - start_time3-dur/2.)
-#         start_time3 = time.time()
-#         RA.set_visible(not RA.get_visible())
-#
-#     if ((time.time()-start_time2)>(dur*0.9)):
-#
-#         if (dur-(time.time()-start_time2))>0:
-#             time.sleep(dur-(time.time()-start_time2))
-#         start_time2 = time.time()
-#         LA.set_visible(not LA.get_visible())
-#
-#     fig.canvas.restore_region(axbackground)
-#     ax.draw_artist(LA)
-#     ax.draw_artist(RA)
-#     ax.draw_artist(line)
-#     fig.canvas.blit(ax.bbox)
-#     plt.pause(0.000000000001)
-
-
-#### Using PsychoPy ####
-
-mywin=visual.Window(fullscr=False, monitor='testMonitor', units='deg',color=(-1,-1,-1),size=[800,600])
-
-pattern1 = visual.ImageStim(win=mywin, name='pattern1',units='pix',size=[800,500],pos=(0,100))
-pattern2 = visual.ShapeStim(win=mywin,vertices=([300, -280], [300, -180], [400, -230]),fillColor=[-1,-1,1],lineColor=[-1,-1,-1],units='pix')
-pattern3 = visual.ShapeStim(win=mywin,vertices=([-300, -280], [-300, -180], [-400, -230]),fillColor=[1,-1,-1],lineColor=[-1,-1,-1],units='pix')
-pattern4 = visual.ShapeStim(win=mywin,vertices=([-400, -170], [-400, -171],[400, -171], [400, -170] ),lineColor=[1,1,1],units='pix')
-pattern5 = visual.TextStim(win=mywin,pos=(0,-230),text='test',color=[1, 1, 1],units='pix')
-
-instructions=['<','+','>']
 Trialclock = core.Clock()
-
-
-freq=20 # (note 30Hz = hardware max, because: turn pixel on / off = 1 frame -> 30Hz flicker needs 60 frames/s)
-
-dur=1./freq
-
-trialtime=4
 
 start_time1=Trialclock.getTime()
 start_time2=Trialclock.getTime()
 start_time3=Trialclock.getTime()
+start_time4=Trialclock.getTime()
+
+idx=np.random.randint(2)
 
 pattern1.setAutoDraw(True)
 pattern4.setAutoDraw(True)
 pattern5.setAutoDraw(True)
-pattern5.setText(instructions[np.random.randint(3)])
+pattern6.setAutoDraw(True)
+pattern7.setAutoDraw(True)
 
-while True:
+frametime=1/60.
+
+dur=1./freq
+dur2=1./freq2
+
+numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
+
+gol=GOL(grid_size)
+
+sendEvent('stimulus.training','start')
+
+while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True:
+
     if ((Trialclock.getTime() - start_time1) > (dur * 0.45)):
-        if (dur*0.49-(Trialclock.getTime()-start_time1))>0:
-            core.wait(dur*0.5-(Trialclock.getTime()-start_time1))
+        if (dur*0.45-(Trialclock.getTime()-start_time1))>0:
+            core.wait(dur*0.49-(Trialclock.getTime()-start_time1))
+        pattern3.setAutoDraw(True)
+
+    if ((Trialclock.getTime() - start_time2) > (dur2 * 0.45)):
+        if (dur2*0.45-(Trialclock.getTime()-start_time2))>0:
+            core.wait(dur2*0.49-(Trialclock.getTime()-start_time2))
+        pattern2.setAutoDraw(True)
+
+    if ((Trialclock.getTime() - start_time1) > (dur * 0.95)):
+        if (dur*0.95-(Trialclock.getTime()-start_time1))>0:
+            core.wait(dur*0.99-(Trialclock.getTime()-start_time1))
         start_time1 = Trialclock.getTime()
-        pattern3.setAutoDraw(not pattern3.autoDraw)
+        pattern3.setAutoDraw(False)
 
-    if ((Trialclock.getTime() - start_time2) > (dur * 0.95)):
-        if (dur*0.99-(Trialclock.getTime()-start_time2))>0:
-            core.wait(dur-(Trialclock.getTime()-start_time2))
+    if ((Trialclock.getTime() - start_time2) > (dur2 * 0.95)):
+        if (dur2*0.95-(Trialclock.getTime()-start_time2))>0:
+            core.wait(dur2*0.99-(Trialclock.getTime()-start_time2))
         start_time2 = Trialclock.getTime()
-        pattern2.setAutoDraw(not pattern2.autoDraw)
+        pattern2.setAutoDraw(False)
 
-    if ((Trialclock.getTime() - start_time3) > trialtime*0.99):
-        if (trialtime*0.99-(Trialclock.getTime()-start_time3))>0:
-            core.wait(trialtime-(Trialclock.getTime()-start_time3))
+    if ((Trialclock.getTime() - start_time3) > trialtime):
         start_time3 = Trialclock.getTime()
-        idx=np.random.randint(3)
-        #sendEvent
+        idx=np.random.randint(2)
+
+        sendEvent('stim.target',values_[idx])
+
+        numtrials_per_cond_act[0][idx]+=1
+        pattern5.setPos(pattern2.pos)
         pattern5.setText(instructions[idx])
+
+        pattern6.setPos(pattern3.pos)
+        pattern6.setText(instructions[idx])
+
+        pattern7.setText(instructions[idx])
 
     data_ = gol().reshape(grid_size, grid_size) + 0
     data_[data_ == 0] = -1
     pattern1.setImage(data_)
     mywin.flip()
-    #core.wait(1/60.)
+
+sendEvent('stim.training','end')
+pattern5.setText('end')
+mywin.flip()
