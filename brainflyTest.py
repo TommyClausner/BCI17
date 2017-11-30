@@ -1,12 +1,69 @@
+#!/usr/bin/env python3
+# Set up imports and paths
+bufferpath = "../../dataAcq/buffer/python"
+sigProcPath = "../signalProc"
+
+import sys,os
+from time import sleep
 import matplotlib
 import numpy as np
 matplotlib.rcParams['toolbar']='None'
 from psychopy import visual, core,event
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
+import FieldTrip
+import bufhelp
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
+
+## CONFIGURABLE VARIABLES
+# Connection options of fieldtrip, hostname and port of the computer running the fieldtrip buffer.
+hostname='localhost'
+port=1972
+
+## init connection to the buffer
+timeout=5000
+(ftc,hdr) = bufhelp.connect(hostname,port)
+
+# Wait until the buffer connects correctly and returns a valid header
+hdr = None
+while hdr is None :
+    print(('Trying to connect to buffer on %s:%i ...'%(hostname,port)))
+    try:
+        ftc.connect(hostname, port)
+        print('\nConnected - trying to read header...')
+        hdr = ftc.getHeader()
+    except IOError:
+        pass
+
+    if hdr is None:
+        print('Invalid Header... waiting')
+        sleep(1)
+    else:
+        print(hdr)
+        print((hdr.labels))
+fSample = hdr.fSample
+
+def sendEvent(event_type, event_value=1, sample=-1):
+    e = FieldTrip.Event()
+    e.type=event_type
+    e.value=event_value
+    e.sample=sample
+    ftc.putEvents(e)
+
+def processBufferEvents():
+    global running
+    events = ftc.getEvents()
+    events=events[-1]
+    if events.type == 'classifier.prediction':
+        pred = events.value
+        game.ship.direction=pred+0
+        sendEvent('stim.target', 1)
+    else:
+        game.ship.direction = 0
+
 
 grid_size=100
 window_size=800
 
-trialtime=4.5 # time per trial
 numtrials_per_cond=20
 
 mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
@@ -108,20 +165,17 @@ class brainfly(object):
                                            width=40, height=32, fillColor=[1, 1, 1],
                                            units='pix')
             self.ship.setAutoDraw(True)
+            self.direction=1
 
-        def __call__(self, mywin,stepsize=10):
-            button=event.getKeys()
-            if len(button)>0:
-                if button[-1]=='left':
-                    self.ship.setPos([self.ship.pos[0] - stepsize, self.ship.pos[1]])
-                if button[-1]=='right':
-                    self.ship.setPos([self.ship.pos[0] + stepsize, self.ship.pos[1]])
+        def __call__(self, mywin,stepsize=50):
 
-                if self.ship.pos[0]<-350:
-                    self.ship.setPos([-350, self.ship.pos[1]])
+            self.ship.setPos([self.ship.pos[0] -self.direction* stepsize, self.ship.pos[1]])
 
-                if self.ship.pos[0]>350:
-                    self.ship.setPos([350, self.ship.pos[1]])
+            if self.ship.pos[0]<-350:
+                self.ship.setPos([-350, self.ship.pos[1]])
+
+            if self.ship.pos[0]>350:
+                self.ship.setPos([350, self.ship.pos[1]])
 
             return self.mywin
 
@@ -189,8 +243,12 @@ numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
 
 stim=stimuli_(mywin)
 game=brainfly(mywin)
+sendEvent('stim.target', 1)
+
 while True:
     mywin=stim(mywin)
     mywin.flip()
     mywin = game(mywin)
     mywin.flip()
+
+    processBufferEvents()
