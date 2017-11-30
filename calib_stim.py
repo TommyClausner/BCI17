@@ -2,14 +2,13 @@
 # Set up imports and paths
 bufferpath = "../../dataAcq/buffer/python"
 sigProcPath = "../signalProc"
-import pygame, sys
-from pygame.locals import *
-from time import sleep, time
+import sys
+from time import sleep
 import os
 import matplotlib
 import numpy as np
 matplotlib.rcParams['toolbar']='None'
-from psychopy import visual, core
+from psychopy import visual, core,event
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
 import FieldTrip
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcPath))
@@ -205,7 +204,7 @@ dur2=1./freq2
 numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
 
 gol=GOL(grid_size)
-
+raw_input("Press any key to continue...")
 sendEvent('stimulus.training','start')
 
 while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True:
