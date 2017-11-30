@@ -1,6 +1,13 @@
 %%
 clc
 clear
+close all
+rawpath='/Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master';
+
+matlab_path=[rawpath '/matlab'];
+tut_path=[rawpath '/tutorial'];
+cd([tut_path '/lect4-im'])
+
 try; cd(fileparts(mfilename('fullpath')));catch; end;
 try;
     run ../../matlab/utilities/initPaths.m
@@ -21,7 +28,6 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
     pause(1);
 end;
 
-%% training
 clc
 clear
 rng('shuffle')

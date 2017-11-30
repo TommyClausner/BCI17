@@ -243,6 +243,7 @@ numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
 
 stim=stimuli_(mywin)
 game=brainfly(mywin)
+raw_input("Press any key to continue...")
 sendEvent('stim.target', 1)
 
 while True:
