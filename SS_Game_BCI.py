@@ -230,6 +230,8 @@ explosion_gif =[]
 # OS
 if platform.system() == 'Windows':
     os.environ['SDL_VIDEODRIVER'] = 'directx'
+else:
+    os.environ['SDL_VIDEODRIVER'] = 'quartz'
 
 # Music
 pygame.mixer.pre_init(44100, 16, 2, 4096)
@@ -250,7 +252,10 @@ clock = pygame.time.Clock()
 
 # GIF
 for i in list(range(17)):
-    file = gif_direct + "\explosion2.gif" + "-" + str(i) + ".gif"
+    if platform.system() == 'Windows':
+        file = gif_direct + "\explosion2.gif" + "-" + str(i) + ".gif"
+    else:
+        file = gif_direct + "/explosion2.gif" + "-" + str(i) + ".gif"
     loaded = pygame.image.load(file).convert_alpha()
     explosion_gif.append(loaded)
 
@@ -322,6 +327,7 @@ left_IC_color = alienColorLeft
 IC_side = int(round(0.1 * ScreenHeight))
 
 # Music
+pygame.mixer.init(44100, -16,2,2048)
 pygame.mixer.music.load("space.mp3")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
