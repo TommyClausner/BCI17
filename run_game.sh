@@ -1,4 +1,9 @@
 #!/bin/bash
-/Applications/MATLAB_R2015a.app/bin/matlab -nodisplay -nodesktop -r "run('/Users/Tommy/Github_repositories/BCI17/feedback_sig.m')" &
+
+#use: sh run_game.sh <matlabroot path> <path to script to execute> <python interpreter path> <python script path>
+
+#example: sh run_game.sh /Applications/MATLAB_Release.app /Users/User/scripts/MATLABscript.m  /usr/bin/ipython /Users/User/scripts/Pythonscript.py
+
+$1/bin/matlab -nodisplay -nodesktop -r "run('$2')" &
 sleep 10s
-/Users/Tommy/anaconda/bin/ipython brainflyTest.py
+$3 $4
