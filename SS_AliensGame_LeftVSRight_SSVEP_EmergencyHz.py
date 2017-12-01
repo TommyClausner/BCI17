@@ -68,6 +68,40 @@ class Alien(object):
             self.time_hz = time.time()
         pass
 
+class BonusAlien(object):
+    def __init__(self, screen, x, y):
+        '''
+        Bonus Alien
+        '''
+        self._x = x
+        self._y = y
+        self._y_now = y
+        self.size = int(round(screen.get_size()[0] * 0.025)) # Ball radius
+        self.R_init = self.size + 0
+        self.color = (0,255,0)
+        self.start_time = time.time() + 0
+        self.screen = screen
+
+        self.sprite = pygame.draw.circle(self.screen, self.color, (self._x, self._y), self.size)
+        self.destroy = False
+
+
+
+
+    def update(self):
+        '''
+        Alien move down
+        '''
+        # Timing of movement
+        time_passed = (time.time() - self.start_time)
+
+        if time_passed >= 3:
+            self.destroy = True
+
+        self.sprite = pygame.draw.circle(self.screen, self.color, (self._x, self._y), self.size)
+
+        pass
+
 class Cannonball(object):
     def __init__(self, screen, x, y):
         '''
@@ -152,14 +186,21 @@ alien_start = 1 # For fist alien
 alienColorRight = (0, 0, 255)
 alienColorLeft = (255, 0, 0)
 
+# Inits bonus aliens
+bonusaliens = []
+bonus_time = time.time()
+bonus_prob = 0.05
+bonus_secs = 5 # Per second there is a bonus_prob of a bonus alien
+
 # Count inits
 start_time = time.time()
 shots_fired = 0
 hit_score = 0
 
-# Alien frequencies
+# Frequencies
 left_hz = 16
 right_hz = 8
+clock_FPS = 35
 
 # Emergency looks
 left_time_IC = time.time()
@@ -171,6 +212,8 @@ IC_side = int(round(0.1 * ScreenHeight))
 # Text inits
 if 'font' not in locals():
     font = pygame.font.Font(None, int(ScreenHeight * 0.03)) # Python crashes if SysFont is called > 1 XOR specified font
+    font_FPS = pygame.font.Font(None, int(ScreenHeight * 0.1))
+
 text_y = int(round(ScreenHeight * 0.01))
 x_time = int(round(ScreenWidth * 0.025))
 x_static = int(round(ScreenWidth * 0.16))
@@ -186,12 +229,16 @@ textColor = (150, 150, 150) # So the bullet over it don't hide the text
 fire_hz = 5
 fire_last = time.time()
 
-## Game loop
-done = False
-
 # For FPS testing
 test_timing = time.time()
 times= []
+now_FPS = 0
+x_FPS = int(round(ScreenWidth * 0.94))
+fps_timer = time.time()
+
+## Game loop
+done = False
+
 
 while not done:
 
@@ -249,6 +296,32 @@ while not done:
             alien_time = time.time()
             alien_start = 0
 
+    # Create Bonus Alien
+    if ((time.time() - bonus_time) >=  bonus_secs) and (float(np.random.uniform(0,1,1)) <= bonus_prob):
+        x_position = np.random.randint(0, ScreenWidth)
+        y_position = np.random.randint(0, ScreenHeight)
+        bonusaliens.append(BonusAlien(screen, x_position, y_position))
+        bonus_time = time.time()
+
+    # Draw Bonus Alien and remove if hit
+    if len(bonusaliens)>0:
+        for i in list(reversed(range(len(bonusaliens)))):
+            bonusaliens[i].update()
+
+            if bonusaliens[i].destroy:
+                del bonusaliens[i]
+
+        if (len(balls) > 0) and (len(bonusaliens)>0):  # Looks for a hit by ball
+            for i in list(reversed(range(len(bonusaliens)))):
+                if len(balls) > 0:
+                    for u in list(reversed(range(len(balls)))):
+                        if len(bonusaliens)>0 and len(balls)>0:
+                            if hit_alien(bonusaliens[i], balls[u]):
+                                del bonusaliens[i]
+                                del balls[u]
+                                hit_score += 1
+
+
     # Move aliens and remove if hit or out of range
     if len(aliens)>0:
         for i in list(reversed(range(len(aliens)))):
@@ -258,7 +331,7 @@ while not done:
                 del aliens[i]
 
 
-        if len(balls) > 0:
+        if len(balls) > 0: # Looks for a hit by ball
             for i in list(reversed(range(len(balls)))):
                 if len(aliens)>0:
                     if hit_alien(aliens[0],balls[i]):
@@ -304,6 +377,14 @@ while not done:
     text = font.render(text_acc, True, textColor)
     screen.blit(text, (x_accuracy, text_y))
 
+
+    # Text FPS
+    text_fps = str(now_FPS)
+    text = font_FPS.render(text_fps, True, (255,255,0))
+    screen.blit(text, (x_FPS, text_y))
+
+
+
     # Text statics
     text_static = '|'
     text = font.render(text_static, True, textColor)
@@ -321,10 +402,12 @@ while not done:
     # Update screen
     pygame.display.flip() # Update screen
     onewhile = time.time() - test_timing
-    # print(onewhile)
     times.append(onewhile)
+    if (time.time() - fps_timer) >= 0.5:
+        now_FPS = int(1.0 / onewhile)
+        fps_timer = time.time()
     test_timing = time.time()
-    clock.tick(60) # Set response pygame rate fo 60fps
+    clock.tick(clock_FPS) # Set response pygame rate fo 60fps
 
     # Quit without error (if this loop is at the beginning, pygame finishes the loop
     for event in pygame.event.get():
