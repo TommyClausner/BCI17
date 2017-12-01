@@ -24,6 +24,7 @@ import numpy as np
 matplotlib.rcParams['toolbar']='None'
 from psychopy import visual, core
 import pygame
+import platform
 from PIL import Image
 
 if braincontrol:
@@ -67,7 +68,11 @@ if braincontrol:
         e.sample=sample
         ftc.putEvents(e)
 
-os.environ['SDL_VIDEODRIVER'] = 'Quartz'
+if platform.system() == 'Windows':
+    os.environ['SDL_VIDEODRIVER'] = 'directx'
+else:
+    os.environ['SDL_VIDEODRIVER'] = 'quartz'
+
 if enable_stimuli:
     mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
     class stimuli_(object):
