@@ -1,4 +1,4 @@
-# BCI17
+# BCI17 
 
 ### MATLAB part
 
