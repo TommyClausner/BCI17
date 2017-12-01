@@ -33,6 +33,9 @@ state=hdr;
 
 while true
 [data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_ms,'exitSet',{'data'});
+if devents.value==0
+    break
+end
 [f,fraw,p]=buffer_apply_ersp_clsfr(data.buf,clsfr);
 sendEvent('classifier.prediction',(f>0)*2-1);
 end
