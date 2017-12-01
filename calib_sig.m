@@ -1,9 +1,15 @@
-try; cd(fileparts(mfilename('fullpath')));catch; end;
-try;
-   run ../../matlab/utilities/initPaths.m
-catch
-   msgbox({'Please change to the directory where this file is saved before running the rest of this code'},'Change directory'); 
-end
+%%
+clc
+clear
+close all
+rawpath='/Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master';
+
+matlab_path=[rawpath '/matlab'];
+tut_path=[rawpath '/tutorial'];
+cd([tut_path '/lect4-im'])
+
+   run /Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master/matlab/utilities/initPaths.m
+
 
 buffhost='localhost';buffport=1972;
 % wait for the buffer to return valid header information

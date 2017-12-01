@@ -4,16 +4,13 @@ clear
 close all
 rawpath='/Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master';
 
+cd('/Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master/tutorial/lect4-im')
 matlab_path=[rawpath '/matlab'];
 tut_path=[rawpath '/tutorial'];
 cd([tut_path '/lect4-im'])
 
-try; cd(fileparts(mfilename('fullpath')));catch; end;
-try;
-   run ../../matlab/utilities/initPaths.m
-catch
-   msgbox({'Please change to the directory where this file is saved before running the rest of this code'},'Change directory'); 
-end
+
+   run /Users/Tommy/Documents/Nijmegen/Study/BCI/buffer_bci-master/matlab/utilities/initPaths.m
 
 buffhost='localhost';buffport=1972;
 % wait for the buffer to return valid header information
@@ -27,13 +24,13 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   end;
   pause(1);
 end;
-load clsfr
+load([tut_path '/lect4-im/clsfr.mat'])
 trlen_ms=50;%samples
 state=hdr;
 
 while true
 [data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_ms,'exitSet',{'data'});
-if devents.value==0
+if devents(end).value==0
     break
 end
 [f,fraw,p]=buffer_apply_ersp_clsfr(data.buf,clsfr);

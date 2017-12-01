@@ -11,6 +11,8 @@ enable_stimuli=1
 cannonfirerate=5
 timeBeforeNextAlien= 3
 
+max_game_dur=90
+
 window_size=800
 deaths=0
 hits=0
@@ -256,7 +258,7 @@ if enable_explosions:
 if braincontrol:
     sendEvent('stim.target', 1)
 
-while Timerobj.getTime() - gamedur<=10:
+while Timerobj.getTime() - gamedur<=max_game_dur:
 
     # create enemies
     if Timerobj.getTime()-enemtimer>timeBeforeNextAlien:

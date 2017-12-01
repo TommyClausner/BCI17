@@ -193,7 +193,7 @@ class stimuli_(object):
 
             self.instructions=['<','>']
 
-        def __call__(self, freq=15, freq2=10):
+        def __call__(self, numtrials_per_cond_act,freq=15, freq2=10):
             dur = 1. / freq
             dur2 = 1. / freq2
 
@@ -235,7 +235,7 @@ class stimuli_(object):
                 self.pattern6.setText(self.instructions[idx])
 
                 self.pattern7.setText(self.instructions[idx])
-
+            return numtrials_per_cond_act
 
 grid_size=100
 window_size=800
@@ -261,7 +261,7 @@ while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True:
     data_ = gol().reshape(grid_size, grid_size) + 0
     data_[data_ == 0] = -1
     stim.pattern1.setImage(data_)
-    stim()
+    numtrials_per_cond_act=stim(numtrials_per_cond_act)
     mywin.flip()
 
 sendEvent('stim.training','end')
