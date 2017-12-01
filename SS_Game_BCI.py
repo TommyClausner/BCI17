@@ -357,7 +357,7 @@ fps_timer = time.time()
 if braincontrol:
     sendEvent('stim.target', 1)
 
-
+direction=[]
 
 ## Game loop
 done = False
