@@ -3,8 +3,17 @@
 bufferpath = "../../dataAcq/buffer/python"
 sigProcPath = "../signalProc"
 
-braincontrol=0
 
+braincontrol=1
+enable_explosions=1
+enable_stimuli=1
+
+cannonfirerate=5
+timeBeforeNextAlien= 3
+
+window_size=800
+deaths=0
+hits=0
 
 import sys,os
 from time import sleep
@@ -56,27 +65,28 @@ if braincontrol:
         e.sample=sample
         ftc.putEvents(e)
 
-window_size=800
-
-numtrials_per_cond=20
 os.environ['SDL_VIDEODRIVER'] = 'Quartz'
-mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
-
-class stimuli_(object):
-        def __init__(self,mywin):
-            self.mywin=mywin
+if enable_stimuli:
+    mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
+    class stimuli_(object):
+        def __init__(self, mywin):
+            self.mywin = mywin
             win_s = self.mywin.size
 
-            self.pattern2 = visual.Circle(win=self.mywin, pos=[win_s[0] / 2 - win_s[0] / 10 + 10, -win_s[1] / 2 + win_s[1] / 10],
-                                     radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
-                                     units='pix')
-            self.pattern3 = visual.Circle(win=self.mywin, pos=[-win_s[0] / 2 + win_s[0] / 10 - 10, -win_s[1] / 2 + win_s[1] / 10],
-                                     radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
-                                     units='pix')
+            self.pattern2 = visual.Circle(win=self.mywin,
+                                          pos=[win_s[0] / 2 - win_s[0] / 10 + 10, -win_s[1] / 2 + win_s[1] / 10],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
+                                          units='pix')
+            self.pattern3 = visual.Circle(win=self.mywin,
+                                          pos=[-win_s[0] / 2 + win_s[0] / 10 - 10, -win_s[1] / 2 + win_s[1] / 10],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
+                                          units='pix')
             self.pattern4 = visual.ShapeStim(win=self.mywin, vertices=(
-            [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)], [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)],
-            [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)], [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)]),
-                                        lineColor=[1, 1, 1], units='pix')
+                [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)],
+                [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)],
+                [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)],
+                [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)]),
+                                             lineColor=[1, 1, 1], units='pix')
 
             self.Trialclock = core.Clock()
 
@@ -89,8 +99,7 @@ class stimuli_(object):
             self.pattern3.setAutoDraw(True)
             self.pattern4.setAutoDraw(True)
 
-
-        def __call__(self,freq = 15,freq2 = 10):
+        def __call__(self, freq=15, freq2=10):
             dur = 1. / freq
             dur2 = 1. / freq2
 
@@ -112,27 +121,32 @@ class stimuli_(object):
                 self.start_time1 = self.Trialclock.getTime()
                 self.pattern3.setAutoDraw(False)
 
-
             if ((self.Trialclock.getTime() - self.start_time2) > (dur2 * 0.95)):
                 if (dur2 * 0.95 - (self.Trialclock.getTime() - self.start_time2)) > 0:
                     core.wait(dur2 * 0.99 - (self.Trialclock.getTime() - self.start_time2))
                 self.start_time2 = self.Trialclock.getTime()
                 self.pattern2.setAutoDraw(False)
 
+    pos_corr=0
+    stim = stimuli_(mywin)
+else:
+    pos_corr = (window_size*0.625-window_size*0.75)/2.
+    mywin=visual.Window([window_size,window_size*0.625],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
+
 class enemy(object):
     def __init__(self,mywin):
         self.mywin=mywin
 
 
-        self.enemy_line=visual.Line(win=self.mywin, start=(-400, 250), end=(400, 250),lineColor='red')
+        self.enemy_line=visual.Line(win=self.mywin, start=(-self.mywin.size[0]/2, self.mywin.size[1]/2+pos_corr), end=(self.mywin.size[0]/2, self.mywin.size[1]/2+pos_corr),lineColor='red')
         self.enemy_line.setAutoDraw(True)
         self.enemy = visual.Circle(win=self.mywin,
-                                       pos=[np.random.randint(600) - 300, 250],
-                                       radius=40, edges=32, fillColor=[-1, 1, -1],
+                                       pos=[np.random.randint(self.mywin.size[0]*0.75) - self.mywin.size[0]*0.375, self.mywin.size[1]/2+pos_corr],
+                                       radius=self.mywin.size[0]/20, edges=32, fillColor=[-1, 1, -1],
                                        units='pix')
         self.enemy.setAutoDraw(True)
 
-    def __call__(self,stepsize=2,radincrease=0.4):
+    def __call__(self,stepsize=1.25,radincrease=0.3):
         self.enemy.setPos([self.enemy.pos[0],self.enemy.pos[1]-stepsize])
         self.enemy_line.setPos([self.enemy_line.pos[0], self.enemy_line.pos[1] - stepsize])
         self.enemy.radius = self.enemy.radius + radincrease
@@ -143,16 +157,16 @@ class spaceship(object):
     def __init__(self, mywin,braincontrol=0):
         self.mywin=mywin
         self.braincontrol=braincontrol
-        self.ship = visual.Rect(win=self.mywin,pos=[0, -150],
-                                       width=40, height=32, fillColor=[1, 1, 1],
+        self.ship = visual.Rect(win=self.mywin,pos=[0, -self.mywin.size[1]/4.+pos_corr*2.],
+                                       width=self.mywin.size[0]/20, height=self.mywin.size[0]/25, fillColor=[1, 1, 1],
                                        units='pix')
         self.ship.setAutoDraw(True)
         self.direction=0
 
-    def __call__(self,stepsize=10):
-
+    def __call__(self):
+        stepsize=self.mywin.size[0]/80
         if self.braincontrol:
-            stepsize=50
+            stepsize = self.mywin.size[0] / 16
             events = ftc.getEvents()
             events = events[-1]
             if events.type == 'classifier.prediction':
@@ -171,11 +185,11 @@ class spaceship(object):
                 self.direction = 0
         self.ship.setPos([self.ship.pos[0] -self.direction* stepsize, self.ship.pos[1]])
 
-        if self.ship.pos[0]<-350:
-            self.ship.setPos([-350, self.ship.pos[1]])
+        if self.ship.pos[0]<-0.4375*self.mywin.size[0]:
+            self.ship.setPos([-0.4375*self.mywin.size[0], self.ship.pos[1]])
 
-        if self.ship.pos[0]>350:
-            self.ship.setPos([350, self.ship.pos[1]])
+        if self.ship.pos[0]>0.4375*self.mywin.size[0]:
+            self.ship.setPos([0.4375*self.mywin.size[0], self.ship.pos[1]])
 
         pass
 
@@ -184,11 +198,12 @@ class cannonball(object):
         def __init__(self, mywin,shippos):
             self.mywin=mywin
             self.ball = visual.Circle(win=self.mywin, pos=shippos,
-                                     radius=15, edges=32, fillColor=[1, 1, 1], lineColor=[-1, -1, -1],
+                                     radius=self.mywin.size[0]/53.334, edges=32, fillColor=[1, 1, 1], lineColor=[-1, -1, -1],
                                      units='pix')
             self.ball.setAutoDraw(True)
 
-        def __call__(self,stepsize=10):
+        def __call__(self):
+            stepsize = self.mywin.size[0] / 80
             self.ball.setPos([self.ball.pos[0],self.ball.pos[1]+stepsize])
             pass
 
@@ -214,29 +229,23 @@ balls=[]
 
 ship=spaceship(mywin,braincontrol)
 enemies.append(enemy(mywin))
-stim=stimuli_(mywin)
 
 Timerobj=core.Clock()
 enemtimer=Timerobj.getTime()
 canontimer=Timerobj.getTime()
-
-deaths=0
-hits=0
 
 gamedur=Timerobj.getTime()
 fpstimer=Timerobj.getTime()
 
 hud_string='Time played: '+str(round(Timerobj.getTime()-gamedur,1))+' | hits: '+str(hits)+' | deaths: '+str(deaths)
 
-HUD_ = visual.TextStim(win=mywin,pos=[-400,300],text=hud_string,color=[1, 1, 1],units='pix',height=20,alignVert='top',alignHoriz='left')
+HUD_ = visual.TextStim(win=mywin,pos=[-mywin.size[0]/2,mywin.size[1]/2],text=hud_string,color=[1, 1, 1],units='pix',height=20,alignVert='top',alignHoriz='left')
 HUD_.setAutoDraw(True)
 
-FPS_ = visual.TextStim(win=mywin,pos=[400,300],text='0',color=[0, 1, 1],units='pix',height=40,alignVert='top',alignHoriz='right')
+FPS_ = visual.TextStim(win=mywin,pos=[mywin.size[0]/2,mywin.size[1]/2],text='0',color=[0, 1, 1],units='pix',height=40,alignVert='top',alignHoriz='right')
 FPS_.setAutoDraw(True)
 
 fps_timer_col=[]
-
-enable_explosions=1
 
 if enable_explosions:
     explosiongif = Image.open("explosion2.gif")
@@ -247,10 +256,10 @@ if enable_explosions:
 if braincontrol:
     sendEvent('stim.target', 1)
 
-while Timerobj.getTime() - gamedur<=90:
+while Timerobj.getTime() - gamedur<=10:
 
     # create enemies
-    if Timerobj.getTime()-enemtimer>3:
+    if Timerobj.getTime()-enemtimer>timeBeforeNextAlien:
         enemtimer = Timerobj.getTime()
         enemies.append(enemy(mywin))
 
@@ -268,7 +277,7 @@ while Timerobj.getTime() - gamedur<=90:
     ship()
 
     # create cannonballs
-    if Timerobj.getTime() - canontimer > 0.3:
+    if Timerobj.getTime() - canontimer > 1./cannonfirerate:
         canontimer = Timerobj.getTime()
         balls.append(cannonball(mywin, ship.ship.pos))
 
@@ -296,13 +305,14 @@ while Timerobj.getTime() - gamedur<=90:
                             ball.ball.setAutoDraw(False)
                             balls.remove(ball)
                         else:
-                            if ball.ball.pos[1] > 400:
+                            if ball.ball.pos[1] > mywin.size[0]/2:
                                 ball.ball.setAutoDraw(False)
                                 balls.remove(ball)
             ball()
 
     # update stimuli pos
-    stim()
+    if enable_stimuli:
+        stim()
 
     # update explosion anim
     if enable_explosions:
@@ -328,3 +338,5 @@ while Timerobj.getTime() - gamedur<=90:
     fpstimer = Timerobj.getTime()
 
     mywin.flip()
+if braincontrol:
+    sendEvent('stim.target', 0)
