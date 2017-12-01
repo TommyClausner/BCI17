@@ -148,109 +148,122 @@ class GOL(object):
         self.gol_old=gol+0
         return self.gol_old
 
+class stimuli_(object):
+        def __init__(self, mywin):
+            self.mywin = mywin
+            win_s = self.mywin.size
+            self.pattern1 = visual.ImageStim(win=mywin, name='pattern1', units='pix',
+                                        size=[win_s[0], win_s[1] - win_s[0] / 8], pos=(0, win_s[0] / 8))
+
+            self.pattern2 = visual.Circle(win=self.mywin,
+                                          pos=[win_s[0] / 2 - win_s[0] / 10 + 10, -win_s[1] / 2 + win_s[1] / 10],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
+                                          units='pix')
+            self.pattern3 = visual.Circle(win=self.mywin,
+                                          pos=[-win_s[0] / 2 + win_s[0] / 10 - 10, -win_s[1] / 2 + win_s[1] / 10],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
+                                          units='pix')
+            self.pattern4 = visual.ShapeStim(win=self.mywin, vertices=(
+                [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)],
+                [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)],
+                [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 9)],
+                [win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)]),
+                                             lineColor=[1, 1, 1], units='pix')
+            self.pattern5 = visual.TextStim(win=mywin, pos=(0, -(win_s[1] / 2 - win_s[1] / 10 - 10)), text='+',
+                                       color=[1, 1, 1], units='pix', height=win_s[0] / 8)
+            self.pattern6 = visual.TextStim(win=mywin, pos=(0, -(win_s[1] / 2 - win_s[1] / 10 - 10)), text='',
+                                       color=[1, 1, 1], units='pix', height=win_s[0] / 8)
+            self.pattern7 = visual.TextStim(win=mywin, pos=(0, -(win_s[1] / 2 - win_s[1] / 10 - 10)), text='',
+                                       color=[1, 1, 1], units='pix', height=win_s[0] / 8)
+
+            self.Trialclock = core.Clock()
+
+            self.start_time1 = self.Trialclock.getTime()
+            self.start_time2 = self.Trialclock.getTime()
+            self.start_time3 = self.Trialclock.getTime()
+            self.start_time4 = self.Trialclock.getTime()
+
+            self.pattern1.setAutoDraw(True)
+            self.pattern2.setAutoDraw(True)
+            self.pattern3.setAutoDraw(True)
+            self.pattern4.setAutoDraw(True)
+            self.pattern5.setAutoDraw(True)
+            self.pattern6.setAutoDraw(True)
+            self.pattern7.setAutoDraw(True)
+
+            self.instructions=['<','>']
+
+        def __call__(self, freq=15, freq2=10):
+            dur = 1. / freq
+            dur2 = 1. / freq2
+
+            if ((self.Trialclock.getTime() - self.start_time1) > (dur * 0.45)):
+                if (dur * 0.45 - (self.Trialclock.getTime() - self.start_time1)) > 0:
+                    core.wait(dur * 0.49 - (self.Trialclock.getTime() - self.start_time1))
+                self.pattern3.setAutoDraw(True)
+
+            if ((self.Trialclock.getTime() - self.start_time2) > (dur2 * 0.45)):
+                if (dur2 * 0.45 - (self.Trialclock.getTime() - self.start_time2)) > 0:
+                    core.wait(dur2 * 0.49 - (self.Trialclock.getTime() - self.start_time2))
+                self.pattern2.setAutoDraw(True)
+
+            if ((self.Trialclock.getTime() - self.start_time1) > (dur * 0.95)):
+
+                if (dur * 0.95 - (self.Trialclock.getTime() - self.start_time1)) > 0:
+                    print(self.Trialclock.getTime() - self.start_time1)
+                    core.wait(dur * 0.99 - (self.Trialclock.getTime() - self.start_time1))
+                self.start_time1 = self.Trialclock.getTime()
+                self.pattern3.setAutoDraw(False)
+
+            if ((self.Trialclock.getTime() - self.start_time2) > (dur2 * 0.95)):
+                if (dur2 * 0.95 - (self.Trialclock.getTime() - self.start_time2)) > 0:
+                    core.wait(dur2 * 0.99 - (self.Trialclock.getTime() - self.start_time2))
+                self.start_time2 = self.Trialclock.getTime()
+                self.pattern2.setAutoDraw(False)
+
+            if ((Trialclock.getTime() - self.start_time3) > trialtime):
+                self.start_time3 = Trialclock.getTime()
+                values_ = ['2 RH', '1 LH']
+                idx = np.random.randint(2)
+                sendEvent('stim.target', values_[idx])
+
+                numtrials_per_cond_act[0][idx] += 1
+                self.pattern5.setPos(self.pattern2.pos)
+                self.pattern5.setText(self.instructions[idx])
+
+                self.pattern6.setPos(self.pattern3.pos)
+                self.pattern6.setText(self.instructions[idx])
+
+                self.pattern7.setText(self.instructions[idx])
+
 
 grid_size=100
 window_size=800
 
-freq=15 # (note 30Hz = hardware max, because: turn pixel on / off = 1 frame -> 30Hz flicker needs 60 frames/s)
-freq2=10
-
 trialtime=4.5 # time per trial
 numtrials_per_cond=20
-
-instructions=['<','>']
-
-#instructions=['<','+','>']
-
-#values_=['2 RH','99 Rest','1 LH']
-values_=['2 RH','1 LH']
 
 #### Using PsychoPy and pygame ####
 
 mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
-
-win_s=mywin.size
-
-pattern1 = visual.ImageStim(win=mywin, name='pattern1',units='pix',size=[win_s[0],win_s[1]-win_s[0]/8],pos=(0,win_s[0]/8))
-pattern2 = visual.Circle(win=mywin,pos=[win_s[0]/2-win_s[0]/10+10,-win_s[1]/2+win_s[1]/10],radius=win_s[0]/16, edges=32,fillColor=[1,-1,-1],lineColor=[-1,-1,-1],units='pix')
-pattern3 = visual.Circle(win=mywin,pos=[-win_s[0]/2+win_s[0]/10-10,-win_s[1]/2+win_s[1]/10],radius=win_s[0]/16, edges=32,fillColor=[-1,-1,1],lineColor=[-1,-1,-1],units='pix')
-pattern4 = visual.ShapeStim(win=mywin,vertices=([-win_s[0]/2, -(win_s[1]/2-win_s[1]/5-10)], [-win_s[0]/2, -(win_s[1]/2-win_s[1]/5-9)],[win_s[0]/2, -(win_s[1]/2-win_s[1]/5-9)], [win_s[0]/2, -(win_s[1]/2-win_s[1]/5-10)] ),lineColor=[1,1,1],units='pix')
-
-pattern5 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='+',color=[1, 1, 1],units='pix',height=win_s[0]/8)
-pattern6 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='',color=[1, 1, 1],units='pix',height=win_s[0]/8)
-pattern7 = visual.TextStim(win=mywin,pos=(0,-(win_s[1]/2-win_s[1]/10-10)),text='',color=[1, 1, 1],units='pix',height=win_s[0]/8)
-
+stim = stimuli_(mywin)
 
 Trialclock = core.Clock()
-
-start_time1=Trialclock.getTime()
-start_time2=Trialclock.getTime()
-start_time3=Trialclock.getTime()
-start_time4=Trialclock.getTime()
-
-idx=np.random.randint(2)
-
-pattern1.setAutoDraw(True)
-pattern4.setAutoDraw(True)
-pattern5.setAutoDraw(True)
-pattern6.setAutoDraw(True)
-pattern7.setAutoDraw(True)
-
-frametime=1/60.
-
-dur=1./freq
-dur2=1./freq2
 
 numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
 
 gol=GOL(grid_size)
-raw_input("Press any key to continue...")
 sendEvent('stimulus.training','start')
 
 while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True:
 
-    if ((Trialclock.getTime() - start_time1) > (dur * 0.45)):
-        if (dur*0.45-(Trialclock.getTime()-start_time1))>0:
-            core.wait(dur*0.49-(Trialclock.getTime()-start_time1))
-        pattern3.setAutoDraw(True)
-
-    if ((Trialclock.getTime() - start_time2) > (dur2 * 0.45)):
-        if (dur2*0.45-(Trialclock.getTime()-start_time2))>0:
-            core.wait(dur2*0.49-(Trialclock.getTime()-start_time2))
-        pattern2.setAutoDraw(True)
-
-    if ((Trialclock.getTime() - start_time1) > (dur * 0.95)):
-        if (dur*0.95-(Trialclock.getTime()-start_time1))>0:
-            core.wait(dur*0.99-(Trialclock.getTime()-start_time1))
-        start_time1 = Trialclock.getTime()
-        pattern3.setAutoDraw(False)
-
-    if ((Trialclock.getTime() - start_time2) > (dur2 * 0.95)):
-        if (dur2*0.95-(Trialclock.getTime()-start_time2))>0:
-            core.wait(dur2*0.99-(Trialclock.getTime()-start_time2))
-        start_time2 = Trialclock.getTime()
-        pattern2.setAutoDraw(False)
-
-    if ((Trialclock.getTime() - start_time3) > trialtime):
-        start_time3 = Trialclock.getTime()
-        idx=np.random.randint(2)
-
-        sendEvent('stim.target',values_[idx])
-
-        numtrials_per_cond_act[0][idx]+=1
-        pattern5.setPos(pattern2.pos)
-        pattern5.setText(instructions[idx])
-
-        pattern6.setPos(pattern3.pos)
-        pattern6.setText(instructions[idx])
-
-        pattern7.setText(instructions[idx])
 
     data_ = gol().reshape(grid_size, grid_size) + 0
     data_[data_ == 0] = -1
-    pattern1.setImage(data_)
+    stim.pattern1.setImage(data_)
+    stim()
     mywin.flip()
 
 sendEvent('stim.training','end')
-pattern5.setText('end')
+stim.pattern5.setText('end')
 mywin.flip()
