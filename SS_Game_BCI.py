@@ -123,7 +123,7 @@ class BonusAlien(object):
         self._x = x
         self._y = y
         self._y_now = y
-        self.size = int(round(screen.get_size()[0] * 0.03)) # Ball radius
+        self.size = int(round(screen.get_size()[0] * 0.05)) # Ball radius
         self.R_init = self.size + 0
         self.color = (0,255,0)
         self.start_time = time.time() + 0
@@ -238,7 +238,7 @@ pygame.mixer.pre_init(44100, 16, 2, 4096)
 
 # Initialize screen
 ScreenWidth = 800
-ScreenHeight = 500
+ScreenHeight = int(0.625 * ScreenWidth)
 pygame.init()
 
 if platform.system() == 'Windows':
@@ -313,6 +313,7 @@ bonus_secs = 8 # Per second there is a bonus_prob of a bonus alien
 start_time = time.time()
 shots_fired = 0
 hit_score = 0
+aliens_total = 0
 
 # Frequencies
 left_hz = 16 #16
@@ -428,6 +429,7 @@ while not done:
     # Create aliens
     if ((time.time() - alien_time) >= 3) or alien_start:
         x_position = np.random.randint(0, ScreenWidth)
+        aliens_total += 1 # For accuracy!
         if x_position >= (ScreenWidth/2.0):
             aliens.append(Alien(screen, x_position, alienColorRight, right_hz, alien_blue))
             alien_time = time.time()
@@ -440,6 +442,7 @@ while not done:
 
     # Create Bonus Alien
     if ((time.time() - bonus_time) >= bonus_secs) and (float(np.random.uniform(0, 1, 1)) <= bonus_prob):
+        aliens_total += 1 # For accuracy!
         x_position = np.random.randint(0, ScreenWidth)
         y_position = np.random.randint(0, int(ScreenHeight * 0.8))
         bonusaliens.append(BonusAlien(screen, x_position, y_position, alien_bonus))
@@ -475,7 +478,7 @@ while not done:
                                 show_explosion = 1
                                 del bonusaliens[i]
                                 del balls[u]
-                                hit_score += 10
+                                hit_score += 1
 
     # Move aliens and remove if hit or out of range
     if len(aliens) > 0:
@@ -524,7 +527,7 @@ while not done:
     screen.blit(text, (x_score, text_y))
 
     # Text accuracy
-    text_acc = 'Accuracy: ' + str(round(hit_score/(shots_fired +0.000001),1)) + '%'
+    text_acc = 'Accuracy: ' + str(round(100 * hit_score/(aliens_total +0.000001),1)) + '%' # aliens_total used to be shots_fired!
     text = font.render(text_acc, True, textColor)
     screen.blit(text, (x_accuracy, text_y))
 
