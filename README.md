@@ -28,3 +28,6 @@ Note that it does not work using an actual EEG system yet.
 - hit return to select
 - during the calibration hit 'esc' to exit
 - during the game hithit 'esc' (basic version) of close window (Steven's version) to exit
+
+### Known Bugs
+- calling the EEG viewer yields a problem when closing it... the GUI window becomes unresponsive and has to be force killed. However this is only the case for the EEG viewer and does not affect other functions. The problem seems to be that after closing the figure window, MATLAB is still activated... if someone knows how to fix that, let me know ;)
