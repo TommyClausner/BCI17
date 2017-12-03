@@ -18,6 +18,13 @@ brainflyTest.py provides a basic version of the original brainfly-game and can b
 SS_Game_BCI.py provides a very sophisticated version employing original space invaders graphics and further eyecandy! (Thanks to Steven!!) 
 
 ### Using the GUI
-The GUI is still under development and currently only runs on Unix (at least I assume without having tested it :D ). In order to use it define your MATLAB and python root in the config.txt file and run start_brainflyGUI_debug.py
+The GUI is still under development and currently only runs on Unix (at least I assume without having tested a Windows version :D ). In order to use it define your MATLAB and python root in the config.txt file and run start_brainflyGUI_debug.py
 
 Note that it does not work using an actual EEG system yet.
+
+- Switch keyboard mode using 'k'
+- Switch EEG mode using 'e'
+- use arrow keys to navigate
+- hit return to select
+- during the calibration hit 'esc' to exit
+- during the game hithit 'esc' (basic version) of close window (Steven's version) to exit
