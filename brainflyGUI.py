@@ -63,10 +63,13 @@ def setupOS():
 def killbuff(BCI_buff_path_int=BCI_buff_path):
 
     if platform.system() == 'Windows':
-        PID=open(main_path+BCI_buff_path_int+"pids.txt")
-        PID=PID.read()[:-1]
-        os.system("start cmd /c taskkill /PID "+PID)
-        print('killed those processes: '+PID)
+        try:
+            PID=open(main_path+BCI_buff_path_int+"pids.txt")
+            PID=PID.read()[:-1]
+            os.system("start cmd /c taskkill /PID "+PID)
+            print('killed those processes: '+PID)
+        except:
+            pass
     else:
         killthose_pids = []
         try:
