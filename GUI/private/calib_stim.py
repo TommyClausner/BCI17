@@ -346,7 +346,6 @@ while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True & (not done
     if len(ev_)>0:
         ev_=ev_[-1]
         if ev_ == 'escape':
-            sendEvent('stim.tartget', 0)
             done = True
 
 sendEvent('stim.training','end')
