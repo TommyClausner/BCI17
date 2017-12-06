@@ -22,18 +22,26 @@ MATLABroot = ~/path_to_MATLAB/bin/matlab -nosplash -nodesktop -r
 Pythonroot = ~/path_to_iPython/ipython
 
 The GUI internally would interpret the above commands as follows:
-~/path_to_MATLAB/bin/matlab -nosplash -nodesktop -r "try;run('myscript.m');end"
+~/path_to_MATLAB/bin/matlab -nosplash -nodesktop -r "try;run('myscript.m');exit;end;exit"
 ~/path_to_iPython/ipython myscript.py
 
 Example (Windows case):
-MATLABroot = C:\path_to_MATLAB\matlab.exe -nosplash -nodesktop -r
-Pythonroot = C:\path_to_MATLAB\python.exe
+MATLABroot = matlab -nosplash -nodesktop -r
+Pythonroot = cmd /c  py -2.7
 
 The GUI internally would interpret the above commands as follows:
-C:\path_to_MATLAB\matlab.exe -nosplash -nodesktop -r "try;run('myscript.m');end"
-C:\path_to_MATLAB\python.exe myscript.py
+matlab -nosplash -nodesktop -r "try;run('myscript.m');end"
+cmd /c  py -2.7 myscript.py
 
 Note that the relative paths to the respective scripts are set internally.
+
+if debug = 1 then the GUI will run in debugmode -> set to 0 if real EEG use is intended
+
+START THE GUI BY DOUBLE CLICKING THE RESPECTIVE "START_for_Windows/unix.bat/.sh"
+
+Further note:
+eeg_quickstart.sh/.bat and debug_quickstart.sh/.bat were modified in order to output PIDs to pids.txt
+This file is used to kill the respective processes within the GUI
 
 Commands:
 - Switch keyboard mode using 'k'
@@ -51,9 +59,5 @@ Further exit commands were added at the end of each MATLAB script to kill the re
 
 Aborting the calibration (hitting 'esc') will cause the classifier to be trained on all available data so far.
 
-The Unix version is able to detect automatically running processes that belong to the buffer and kills them (without crashing ;) )
-
 ### Known Bugs
-- calling the EEG viewer yields a problem when closing it... the GUI window becomes unresponsive and has to be force killed. However this is only the case for the EEG viewer and does not affect other functions. The problem seems to be that after closing the figure window, MATLAB is still activated... if someone knows how to fix that, let me know ;) SOLVED
-
-- sometimes the buffer is not initialised properly. In order to cope with that switching EEG mode on and off again works in most cases.
+- in eeg_quickstart.sh/.bat the file startMobita.sh/.bat crashes -> can't find /dataAcq/buffer/bin/startMobita.sh./.bat
