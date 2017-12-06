@@ -51,6 +51,8 @@ Further exit commands were added at the end of each MATLAB script to kill the re
 
 Aborting the calibration (hitting 'esc') will cause the classifier to be trained on all available data so far.
 
+The Unix version is able to detect automatically running processes that belong to the buffer and kills them (without crashing ;) )
+
 ### Known Bugs
 - calling the EEG viewer yields a problem when closing it... the GUI window becomes unresponsive and has to be force killed. However this is only the case for the EEG viewer and does not affect other functions. The problem seems to be that after closing the figure window, MATLAB is still activated... if someone knows how to fix that, let me know ;) SOLVED
 
