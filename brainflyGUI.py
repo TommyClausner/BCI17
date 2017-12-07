@@ -337,6 +337,8 @@ while not done:
     time.sleep(sleep_timer)
 # clear screen + kill buffers
 mywin.close()
+if platform.system() == 'Windows':
+    os.system("start cmd /c taskkill /IM cmd.exe")
 killbuff()
 try: os.remove(main_path+BCI_buff_path+"pids.txt")
 except: pass
