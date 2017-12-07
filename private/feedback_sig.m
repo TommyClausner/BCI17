@@ -20,7 +20,7 @@ end;
 load clsfr
 trlen_ms=50;%samples
 state=hdr;
-
+sendEvent('game.start',1)
 while true
 [data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_ms,'exitSet',{'data'});
 if devents(end).value==0
