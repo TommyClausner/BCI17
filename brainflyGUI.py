@@ -104,7 +104,38 @@ def debug_mode(isdebug=False):
             subprocess.Popen('start eeg_quickstart.bat %', shell=True)
         else:
             subprocess.Popen(main_path + BCI_buff_path + 'eeg_quickstart.sh &', shell=True)
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), bufferpath))
+    import bufhelp
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), sigProcPath))
 
+    ## CONFIGURABLE VARIABLES
+    # Connection options of fieldtrip, hostname and port of the computer running the fieldtrip buffer.
+    hostname = 'localhost'
+    port = 1972
+
+    ## init connection to the buffer
+    timeout = 5000
+    (ftc, hdr) = bufhelp.connect(hostname, port)
+
+    # Wait until the buffer connects correctly and returns a valid header
+    hdr = None
+    while hdr is None:
+        print(('Trying to connect to buffer on %s:%i ...' % (hostname, port)))
+        try:
+            ftc.connect(hostname, port)
+            print('\nConnected - trying to read header...')
+            hdr = ftc.getHeader()
+        except IOError:
+            pass
+
+        if hdr is None:
+            print('Invalid Header... waiting')
+            time.sleep(1)
+        else:
+            print(hdr)
+            print((hdr.labels))
+    fSample = hdr.fSample
+    return ftc
 def setupScripts():
     # setup scripts
     # That part is important: it uses the interpreters set in config.txt to call the respective scripts
@@ -227,7 +258,7 @@ class keylistener_(object):
         else:
             self.skip_suffix = ' &'
 
-    def __call__(self, ev_):
+    def __call__(self, ev_,ftc):
         if len(ev_) > 0: # ensure that keyboard events exist
 
             ev_ = ev_[-1]  # use lates event
@@ -318,6 +349,7 @@ class keylistener_(object):
                             while not ready_:
                                 events = ftc.getEvents()
                                 events = events[-1]
+                                print(events)
                                 if events.type == 'game.start':
                                     ready_ = True
                             try:
@@ -328,6 +360,14 @@ class keylistener_(object):
                             except:
                                 pass
                         except: pass
+                    else:
+                        try:
+                            subprocess.Popen(
+                                scripts_[4 + int(self.Stevens_version)] + self.braincontrol + self.skip_suffix,
+                                shell=True);print(
+                            scripts_[4 + int(self.Stevens_version)] + self.braincontrol + self.skip_suffix)
+                        except:
+                            pass
 
         return self.curr_menu_idx, self.update_menu, self.done
 
@@ -336,7 +376,7 @@ mywin_splash=splashscreen_()
 sleep_timer=setupOS()
 
 # initial EEG mode setting -> EEG: set to False
-debug_mode(initdebug)
+ftc=debug_mode(initdebug)
 
 # prepare sub-scripts
 scripts_=setupScripts()
@@ -355,7 +395,7 @@ done=False
 while not done:
     ev_=event.getKeys()
     time.sleep(sleep_timer)
-    curr_menu_idx,update_menu,done=get_keys(ev_)
+    curr_menu_idx,update_menu,done=get_keys(ev_,ftc)
     if update_menu: update_menu=updateMenu()
     time.sleep(sleep_timer)
 # clear screen + kill buffers
