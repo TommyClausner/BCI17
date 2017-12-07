@@ -253,7 +253,7 @@ explosion_gif =[]
 
 # OS
 if platform.system() == 'Windows':
-    os.environ['SDL_VIDEODRIVER'] = 'directx'
+    os.environ['SDL_VIDEODRIVER'] = 'windib' #'directx'
 else:
     os.environ['SDL_VIDEODRIVER'] = 'quartz'
 

@@ -53,8 +53,8 @@ MATLABrootpath,Pythonrootpath,main_path,BCI_buff_path,bufferpath,sigProcPath,ass
 def setupOS():
     # setup video drivers
     if platform.system() == 'Windows':
-        os.environ['SDL_VIDEODRIVER'] = 'directx'
-        sleep_timer=0.1
+        os.environ['SDL_VIDEODRIVER'] = 'windib'#'directx'
+        sleep_timer=0.08
     else:
         sleep_timer=0
         os.environ['SDL_VIDEODRIVER'] = 'quartz'
@@ -84,6 +84,8 @@ def killbuff(BCI_buff_path_int=BCI_buff_path):
             print('killed those processes: ')
             print(killthose_pids)
         except: pass
+
+
 
 def debug_mode(isdebug=False):
 
