@@ -293,41 +293,18 @@ class keylistener_(object):
 
                 # call calibration
                 if self.curr_menu_idx == 1:
-                    try:
-                        subprocess.Popen(scripts_[1]+self.skip_suffix,shell=True);print(scripts_[1]+self.skip_suffix)
-                        ready_ = False
-                        while not ready_:
-                            events = ftc.getEvents()
-                            events = events[-1]
-                            if events.type == 'calib.start':
-                                ready_=True
-                        try:
-                           subprocess.Popen(scripts_[3] + self.skip_suffix, shell=True);print(
-                           scripts_[3] + self.skip_suffix)
-                        except:
-                           pass
-                    except:
-                         pass
+                    try: subprocess.Popen(scripts_[1]+self.skip_suffix,shell=True);print(scripts_[1]+self.skip_suffix);time.sleep(15)
+                    except: pass
+                    try: subprocess.Popen(scripts_[3]+self.skip_suffix, shell=True);print(scripts_[3]+self.skip_suffix)
+                    except: pass
 
                 # call Game
                 if self.curr_menu_idx == 2:
                     if not self.Keyboard_is_on:
-                        try:
-                            subprocess.Popen(scripts_[2]+self.skip_suffix, shell=True);print(scripts_[2]+self.skip_suffix)
-                            ready_ = False
-                            while not ready_:
-                                events = ftc.getEvents()
-                                events = events[-1]
-                                if events.type == 'game.start':
-                                    ready_ = True
-                            try:
-                                subprocess.Popen(
-                                    scripts_[4 + int(self.Stevens_version)] + self.braincontrol + self.skip_suffix,
-                                    shell=True);print(
-                                scripts_[4 + int(self.Stevens_version)] + self.braincontrol + self.skip_suffix)
-                            except:
-                                pass
+                        try: subprocess.Popen(scripts_[2]+self.skip_suffix, shell=True);print(scripts_[2]+self.skip_suffix);time.sleep(15)
                         except: pass
+                    try: subprocess.Popen(scripts_[4+int(self.Stevens_version)]+self.braincontrol+self.skip_suffix, shell=True);print(scripts_[4+int(self.Stevens_version)]+self.braincontrol+self.skip_suffix)
+                    except: pass
 
         return self.curr_menu_idx, self.update_menu, self.done
 

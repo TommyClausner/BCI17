@@ -101,7 +101,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),sigProcP
 
 # setup video drivers
 if platform.system() == 'Windows':
-    os.environ['SDL_VIDEODRIVER'] = 'windib'#'directx'
+    os.environ['SDL_VIDEODRIVER'] = 'directx'
 else:
     os.environ['SDL_VIDEODRIVER'] = 'quartz'
 # stimuli
