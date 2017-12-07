@@ -61,3 +61,10 @@ Aborting the calibration (hitting 'esc') will cause the classifier to be trained
 
 ### Known Bugs
 - in eeg_quickstart.sh/.bat the file startMobita.sh/.bat crashes -> can't find /dataAcq/buffer/bin/startMobita.sh./.bat
+
+
+# Windows connect mobita:
+- Connect the asus wifi "dongler?"
+- start mobita EEG system
+- Go to D:\Users\Iglohut\Documents\GitHub\BCI17\external\dataAcq -> 10sec wait -> open startMobita_autoconnect_.bat and chose your mobita
+* For this purpose you'd have to unpack "autoconnect" zip file in this folder (once ever).  
