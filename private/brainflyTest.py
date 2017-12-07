@@ -12,6 +12,7 @@ hits=0
 import pygame.locals
 import sys,os
 from time import sleep
+import time # NEW
 import matplotlib
 matplotlib.rcParams['toolbar']='None'
 from psychopy import visual, core
@@ -303,6 +304,7 @@ pygame.display.init()
 
 # run Game
 while Timerobj.getTime() - gamedur<=max_game_dur:
+    time.sleep(1.0/100)
     if pygame.key.get_pressed()[pygame.K_ESCAPE]:
         if braincontrol:
             sendEvent('stim.target', 0)
