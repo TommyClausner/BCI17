@@ -17,7 +17,7 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   pause(1);
 end;
 
-cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps/*.txt']);
+cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps' filesep '*.txt']);
 cap_=cap_(1:end-4);
 
 trlen_ms=4000;
