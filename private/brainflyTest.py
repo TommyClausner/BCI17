@@ -115,11 +115,11 @@ if enable_stimuli:
 
             self.pattern2 = visual.Circle(win=self.mywin,
                                           pos=[win_s[0] / 2 - win_s[0] / 10 + 10, -win_s[1] / 2 + win_s[1] / 10],
-                                          radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
                                           units='pix')
             self.pattern3 = visual.Circle(win=self.mywin,
                                           pos=[-win_s[0] / 2 + win_s[0] / 10 - 10, -win_s[1] / 2 + win_s[1] / 10],
-                                          radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
+                                          radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
                                           units='pix')
             self.pattern4 = visual.ShapeStim(win=self.mywin, vertices=(
                 [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)],
