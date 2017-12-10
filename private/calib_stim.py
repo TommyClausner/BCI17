@@ -3,6 +3,7 @@ from time import sleep
 import os
 import matplotlib
 import numpy as np
+from threading import Timer
 
 from psychopy import visual, core,event
 
@@ -301,6 +302,8 @@ class stimuli_(object):
 
             if ((Trialclock.getTime() - self.start_time3) > trialtime):
                 self.start_time3 = Trialclock.getTime()
+                t = Timer(rec_wait_time, sendEvent, ['stim.target', values_[idx]])
+
                 values_ = ['1 LH','2 RH']
                 idx = np.random.randint(2)
 
@@ -312,8 +315,7 @@ class stimuli_(object):
                 self.pattern6.setText(self.instructions[idx])
 
                 self.pattern7.setText(self.instructions[idx])
-                sleep(rec_wait_time)
-                sendEvent('stim.target', values_[idx])
+                t.start()
 
             return numtrials_per_cond_act
 
