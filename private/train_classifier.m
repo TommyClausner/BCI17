@@ -18,20 +18,16 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
 end;
 
 CLASSIFIER_PATH = ['..' filesep 'classifiers'];
+DATA_PATH = [pwd filesep '..' filesep '0001'];
 
 cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps' filesep '*.txt']);
 cap_=cap_(1:end-4);
 
 trlen_ms=1000;
 
-sendEvent('calib.start',1)
-[data,devents,state]=buffer_waitData(buffhost,buffport,[],'startSet',{'stim.target'},'exitSet',{'stim.training' 'end'},'trlen_ms',trlen_ms);
-devents(end,:)=[]; % removing last devent entry due to the exit event
-data(end,:)=[]; % removing last data entry due to the exit event
-
-clsfr=buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','CAR','freqband',[0.1 1 30 31],'badtrrm',0,'badchrm',0,'capFile',cap_,'overridechnms',1);
+[data,devents,hdr,allevents] = sliceraw(DATA_PATH,'startSet',{'stim.target'},'trlen_ms',trlen_ms);
+[clsfr,res,X,Y]= buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','CAR','freqband',[0.1 1 30 31],'badtrrm',0,'badchrm',0,'capFile',cap_,'overridechnms',1);
 
 num = numel(dir([CLASSIFIER_PATH filesep '*.mat'])) + 1;
 save([CLASSIFIER_PATH filesep 'clsfr' num2str(num)],'-struct','clsfr');
-waitfor(gcf)
-exit
+

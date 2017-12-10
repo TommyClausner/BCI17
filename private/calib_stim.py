@@ -303,7 +303,6 @@ class stimuli_(object):
                 self.start_time3 = Trialclock.getTime()
                 values_ = ['1 LH','2 RH']
                 idx = np.random.randint(2)
-                sendEvent('stim.target', values_[idx])
 
                 numtrials_per_cond_act[0][idx] += 1
                 self.pattern5.setPos(self.pattern2.pos)
@@ -313,13 +312,17 @@ class stimuli_(object):
                 self.pattern6.setText(self.instructions[idx])
 
                 self.pattern7.setText(self.instructions[idx])
+                sleep(rec_wait_time)
+                sendEvent('stim.target', values_[idx])
+
             return numtrials_per_cond_act
 
 grid_size=100
 window_size=800
 
-trialtime=4.5 # time per trial
-numtrials_per_cond=20
+trialtime=1.5 # time per trial
+rec_wait_time = 0.5 # wait 0.5s until target event is sent to only record last second
+numtrials_per_cond=80
 
 #### Using PsychoPy and pygame ####
 mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")

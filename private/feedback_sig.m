@@ -18,7 +18,7 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   pause(1);
 end;
 load clsfr
-trlen_ms=50;%samples
+trlen_ms=1000;%samples
 state=hdr;
 
 while true

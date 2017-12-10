@@ -587,7 +587,7 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             if braincontrol:
-                sendEvent('stim.tartget', 0)
+                sendEvent('stim.target', 0)
             done = True
 pygame.quit() # Close window
 
