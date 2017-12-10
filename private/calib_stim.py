@@ -302,10 +302,9 @@ class stimuli_(object):
 
             if ((Trialclock.getTime() - self.start_time3) > trialtime):
                 self.start_time3 = Trialclock.getTime()
-                t = Timer(rec_wait_time, sendEvent, ['stim.target', values_[idx]])
-
                 values_ = ['1 LH','2 RH']
                 idx = np.random.randint(2)
+                t = Timer(rec_wait_time, sendEvent, ['stim.target', values_[idx]])
 
                 numtrials_per_cond_act[0][idx] += 1
                 self.pattern5.setPos(self.pattern2.pos)
