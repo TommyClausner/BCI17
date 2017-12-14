@@ -214,7 +214,7 @@ class keylistener_(object):
         # predefinition of all sorts of stuff
 
         self.curr_menu_idx = 2 # selection initially on "Play Game"
-        self.EEG_is_on = True
+        self.EEG_is_on = not initdebug
         self.Keyboard_is_on = True
         self.braincontrol=' '+str(int(not self.Keyboard_is_on))
         self.update_menu = 1 # to draw the main window for the first time
