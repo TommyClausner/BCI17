@@ -33,11 +33,15 @@ from PIL import Image
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         braincontrol = int(sys.argv[1])
+        color = int(sys.argv[2])
     else:
         braincontrol = 0
+        color = 1
 else:
-    braincontrol=0
+    braincontrol = 0
+    color = 1
 print(braincontrol)
+print(color)
 if braincontrol:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
     import FieldTrip
@@ -289,9 +293,14 @@ background = pygame.image.load(assetpath+"space_background.png")
 background = pygame.transform.scale(background, (ScreenWidth, ScreenHeight))
 
 # Images
-alien_red = pygame.image.load(assetpath+"alien_red.png").convert_alpha()
+if color:
+    alien_red = pygame.image.load(assetpath+"alien_red.png").convert_alpha()
+    alien_blue = pygame.image.load(assetpath+"alien_blue.png").convert_alpha()
+else:
+    alien_red = pygame.image.load(assetpath+"alien_red_white.png").convert_alpha()
+    alien_blue = pygame.image.load(assetpath+"alien_blue_white.png").convert_alpha()
+
 alien_red = pygame.transform.scale(alien_red, (int(ScreenWidth * 0.15), int(ScreenHeight * 0.15)))
-alien_blue = pygame.image.load(assetpath+"alien_blue.png").convert_alpha()
 alien_blue = pygame.transform.scale(alien_blue, (int(ScreenWidth * 0.15), int(ScreenHeight * 0.15)))
 
 alien_red_static = pygame.transform.scale(alien_red, (int(ScreenWidth * 0.13), int(ScreenHeight * 0.13)))
@@ -321,8 +330,13 @@ aliens=[]
 alien_time = time.time()
 alien_secs = 3 # 1 alien per 3 sec
 alien_start = 1 # For fist alien
-alienColorRight = (0, 0, 255)
-alienColorLeft = (255, 0, 0)
+
+if color:
+    alienColorRight = (0, 0, 255)
+    alienColorLeft = (255, 0, 0)
+else:
+    alienColorRight = (255, 255, 255)
+    alienColorLeft = (255, 255, 255)
 
 # Inits bonus aliens
 bonusaliens = []

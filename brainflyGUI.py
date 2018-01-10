@@ -6,6 +6,7 @@ from psychopy import visual, core,event
 import platform
 from PIL import Image
 import gc
+import pdb
 
 def initModules():
     # presetting for some modules
@@ -13,6 +14,7 @@ def initModules():
     pygame.init()
     pygame.display.init()
 
+#pdb.set_trace()
 initModules()
 
 def initPaths():
@@ -202,6 +204,7 @@ def updateMenu():
     return 0
 
 def splashscreen_():
+    #pdb.set_trace()
     mywin_splash = visual.Window([400,300], units='pix', monitor='testMonitor', winType="pygame")
     BG_ = visual.ImageStim(mywin_splash, image=Image.open(main_path + assetpath + os.sep + "splashscreen.jpg"))
     BG_.setAutoDraw(True)
@@ -221,6 +224,7 @@ class keylistener_(object):
         self.done = False # for the while loop that executes the GUI
         self.music=True
         self.Stevens_version=True # set to False if you prefer the default brainFly version
+        self.color_mode = True # set to False for non-color stimuli
 
         if platform.system() == 'Windows':
             self.skip_suffix = ' %'
@@ -244,7 +248,7 @@ class keylistener_(object):
             # switching game mode
             if ev_ == 'g':
                 self.Stevens_version=not self.Stevens_version
-                high_res_indicator.image = icons[int(self.Stevens_version)+5]
+                #high_res_indicator.image = icons[int(self.Stevens_version)+5]
                 self.update_menu = 1
 
             # switching eeg mode
@@ -265,6 +269,12 @@ class keylistener_(object):
                 Keyboard_indicator.image = icons[int(self.Keyboard_is_on) + 2]
                 self.braincontrol=' '+str(int(not self.Keyboard_is_on))
                 self.update_menu = 1
+
+            # switching color mode    
+            if ev_ == 'c':
+                self.color_mode = not self.color_mode
+                high_res_indicator.image = icons[int(self.color_mode)+5]
+                self.update_menu = 1        
 
         # loop the menu
         if self.curr_menu_idx < 0:
@@ -295,7 +305,7 @@ class keylistener_(object):
                 if self.curr_menu_idx == 1:
                     try: subprocess.Popen(scripts_[1]+self.skip_suffix,shell=True);print(scripts_[1]+self.skip_suffix);time.sleep(15)
                     except: pass
-                    try: subprocess.Popen(scripts_[3]+self.skip_suffix, shell=True);print(scripts_[3]+self.skip_suffix)
+                    try: subprocess.Popen(scripts_[3]+' '+str(int(self.color_mode))+self.skip_suffix, shell=True);print(scripts_[3]+ ' ' + str(int(self.color_mode)) + self.skip_suffix)
                     except: pass
 
                 # call Game
@@ -303,7 +313,7 @@ class keylistener_(object):
                     if not self.Keyboard_is_on:
                         try: subprocess.Popen(scripts_[2]+self.skip_suffix, shell=True);print(scripts_[2]+self.skip_suffix);time.sleep(15)
                         except: pass
-                    try: subprocess.Popen(scripts_[4+int(self.Stevens_version)]+self.braincontrol+self.skip_suffix, shell=True);print(scripts_[4+int(self.Stevens_version)]+self.braincontrol+self.skip_suffix)
+                    try: subprocess.Popen(scripts_[4+int(self.Stevens_version)]+self.braincontrol + ' ' + str(int(self.color_mode)) + self.skip_suffix, shell=True);print(scripts_[4+int(self.Stevens_version)]+self.braincontrol+ ' ' + str(int(self.color_mode)) +self.skip_suffix)
                     except: pass
 
         return self.curr_menu_idx, self.update_menu, self.done
@@ -311,7 +321,6 @@ class keylistener_(object):
 mywin_splash=splashscreen_()
 
 sleep_timer=setupOS()
-
 # initial EEG mode setting -> EEG: set to False
 debug_mode(initdebug)
 

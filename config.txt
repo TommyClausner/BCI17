@@ -14,5 +14,8 @@
 # when setting the below value to 0, the GUI will start in EEG mode
 debug = 1
 
-MATLABroot = /Applications/MATLAB_R2015a.app/bin/matlab -nosplash -nodesktop -r
-Pythonroot = /Users/Tommy/anaconda/bin/ipython
+#MATLABroot = /Applications/MATLAB_R2015a.app/bin/matlab -nosplash -nodesktop -r
+#Pythonroot = /Users/Tommy/anaconda/bin/ipython
+
+MATLABroot = /Applications/MATLAB_R2015b.app/bin/matlab -nosplash -nodesktop -r 
+Pythonroot = python2
