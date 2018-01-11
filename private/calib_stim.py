@@ -31,9 +31,17 @@ import platform
 ##### BCI enable #######
 if __name__ == "__main__":
     braincontrol = 1#int(sys.argv[1])
+    ##### BCI enable #######
+    if len(sys.argv) > 1:
+        color = int(sys.argv[1])
+    else:
+        color = 1
 else:
     braincontrol=0
+    color = 1
 print(braincontrol)
+print(color)
+
 if braincontrol:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
     import FieldTrip
@@ -228,19 +236,27 @@ class GOL(object):
 
 # setup stimuli
 class stimuli_(object):
-        def __init__(self, mywin):
+        def __init__(self, mywin, color):
             self.mywin = mywin
             win_s = self.mywin.size
+
+            if color:
+                blue = [-1, -1, 1]
+                red = [1, -1, -1]
+            else:
+                blue = [1, 1, 1]
+                red = [1, 1, 1]
+
             self.pattern1 = visual.ImageStim(win=mywin, name='pattern1', units='pix',
                                         size=[win_s[0], win_s[1] - win_s[0] / 8], pos=(0, win_s[0] / 8))
 
             self.pattern2 = visual.Circle(win=self.mywin,
                                           pos=[win_s[0] / 2 - win_s[0] / 10 + 10, -win_s[1] / 2 + win_s[1] / 10],
-                                          radius=win_s[0] / 16, edges=32, fillColor=[-1, -1, 1], lineColor=[-1, -1, -1],
+                                          radius=win_s[0] / 16, edges=32, fillColor=blue, lineColor=[-1, -1, -1],
                                           units='pix')
             self.pattern3 = visual.Circle(win=self.mywin,
                                           pos=[-win_s[0] / 2 + win_s[0] / 10 - 10, -win_s[1] / 2 + win_s[1] / 10],
-                                          radius=win_s[0] / 16, edges=32, fillColor=[1, -1, -1], lineColor=[-1, -1, -1],
+                                          radius=win_s[0] / 16, edges=32, fillColor=red, lineColor=[-1, -1, -1],
                                           units='pix')
             self.pattern4 = visual.ShapeStim(win=self.mywin, vertices=(
                 [-win_s[0] / 2, -(win_s[1] / 2 - win_s[1] / 5 - 10)],
@@ -324,15 +340,13 @@ window_size=800
 trialtime=1.5 # time per trial
 rec_wait_time = 0.5 # wait 0.5s until target event is sent to only record last second
 numtrials_per_cond=80
-
 #### Using PsychoPy and pygame ####
 mywin=visual.Window([window_size,window_size*0.75],color=(-1,-1,-1),units='pix',monitor='testMonitor',winType="pygame")
-stim = stimuli_(mywin)
+stim = stimuli_(mywin, color)
 
 Trialclock = core.Clock()
 
 numtrials_per_cond_act=np.atleast_2d(np.zeros(2))
-
 gol=GOL(grid_size)
 sendEvent('stimulus.training','start')
 done=False
