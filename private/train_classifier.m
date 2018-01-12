@@ -23,7 +23,7 @@ DATA_PATH = [pwd filesep '..' filesep '0001'];
 cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps' filesep '*.txt']);
 cap_=cap_(1:end-4);
 
-trlen_ms=1000;
+trlen_ms=2000;
 
 [data,devents,hdr,allevents] = sliceraw(DATA_PATH,'startSet',{'stim.target'},'trlen_ms',trlen_ms);
 [clsfr,res,X,Y]= buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','CAR','freqband',[0.1 1 30 31],'badtrrm',0,'badchrm',0,'capFile',cap_,'overridechnms',1);

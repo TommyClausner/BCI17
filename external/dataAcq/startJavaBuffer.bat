@@ -3,7 +3,7 @@ set batdir=%~dp0
 cd %batdir%
 call ..\utilities\findJava.bat
 
-set drive=%~d0
+set drive=%~dp0..\..
 set bciroot=output
 set subject=test
 rem get date/session

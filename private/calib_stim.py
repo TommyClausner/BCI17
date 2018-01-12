@@ -34,13 +34,18 @@ if __name__ == "__main__":
     ##### BCI enable #######
     if len(sys.argv) > 1:
         color = int(sys.argv[1])
+        use_gol = 1 #int(sys.argv[2])
     else:
         color = 1
+        use_gol = 1
 else:
     braincontrol=0
     color = 1
+    use_gol = 1
+
 print(braincontrol)
 print(color)
+print(use_gol)
 
 if braincontrol:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
@@ -337,7 +342,7 @@ class stimuli_(object):
 grid_size=100
 window_size=800
 
-trialtime=1.5 # time per trial
+trialtime = 2.5 # time per trial
 rec_wait_time = 0.5 # wait 0.5s until target event is sent to only record last second
 numtrials_per_cond=80
 #### Using PsychoPy and pygame ####
@@ -354,9 +359,12 @@ done=False
 # run calibration
 while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True & (not done):
 
+    if use_gol:
+        data_ = gol().reshape(grid_size, grid_size) + 0
+        data_[data_ == 0] = -1
+    else:
+        data_ = np.zeros((grid_size, grid_size))
 
-    data_ = gol().reshape(grid_size, grid_size) + 0
-    data_[data_ == 0] = -1
     stim.pattern1.setImage(data_)
     numtrials_per_cond_act=stim(numtrials_per_cond_act)
     mywin.flip()

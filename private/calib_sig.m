@@ -18,11 +18,12 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
 end;
 
 CLASSIFIER_PATH = ['..' filesep 'classifiers'];
+DATA_PATH = ['..' filesep 'output']
 
 cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps' filesep '*.txt']);
 cap_=cap_(1:end-4);
 
-trlen_ms=1000;
+trlen_ms=2000;
 
 sendEvent('calib.start',1)
 [data,devents,state]=buffer_waitData(buffhost,buffport,[],'startSet',{'stim.target'},'exitSet',{'stim.training' 'end'},'trlen_ms',trlen_ms);
@@ -33,5 +34,11 @@ clsfr=buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','CAR','freqband',
 
 num = numel(dir([CLASSIFIER_PATH filesep '*.mat'])) + 1;
 save([CLASSIFIER_PATH filesep 'clsfr' num2str(num)],'-struct','clsfr');
+
+save_data.data = data;
+save_data.devents = devents;
+num = numel(dir([DATA_PATH filesep '*.mat'])) + 1;
+save([DATA_PATH filesep 'data' num2str(num)],'-struct','save_data');
+
 waitfor(gcf)
 exit

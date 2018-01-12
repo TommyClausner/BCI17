@@ -9,7 +9,7 @@ outdir=
 
 # fall back code to compute save location
 if [ -z $outdir ] ; then
-	 bciroot=~/output
+	 bciroot=../output
 	 subject='test';
 	 if [ $# -gt 0 ]; then subject=$1; fi 
 	 session=`date +%y%m%d`
