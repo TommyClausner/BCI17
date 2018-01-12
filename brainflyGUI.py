@@ -144,6 +144,8 @@ def setupMainwindow(winsize=[800,600]):
     icons.append(Image.open(main_path+assetpath+os.sep+"keyboard_icon.png"))
     icons.append(Image.open(main_path + assetpath + os.sep + "high_res_off.png"))
     icons.append(Image.open(main_path + assetpath + os.sep + "high_res_on.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"GOL_on_icon.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"GOL_off_icon.png"))
 
     # setup GUI
     mywin=visual.Window(winsize,units='pix',monitor='testMonitor',winType="pygame")
@@ -157,6 +159,11 @@ def setupMainwindow(winsize=[800,600]):
     EEG_indicator.setAutoDraw(True)
     EEG_indicator_text=visual.TextStim(mywin,text='EEG mode',font='Futura',pos=[-300,210],units='pix',height=30)
     EEG_indicator_text.setAutoDraw(True)
+
+    
+    # GOL indicator
+    GOL_indicator=visual.ImageStim(mywin,image=icons[7],pos=[-300,150],units='pix', size=(50,50))
+    GOL_indicator.setAutoDraw(True)
 
     # Keyboard indicator
     Keyboard_=visual.ImageStim(mywin,image=icons[4],pos=[-300,-250])
@@ -192,7 +199,7 @@ def setupMainwindow(winsize=[800,600]):
     pygame.mixer.music.load(main_path+assetpath+os.sep+'backgroundmusic.wav')
     pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
-    return mywin,main_menu,EEG_indicator,Keyboard_indicator,high_res_indicator,icons
+    return mywin,main_menu,EEG_indicator,GOL_indicator,Keyboard_indicator,high_res_indicator,icons
 
 def updateMenu():
     main_menu[4].start = ((main_menu[curr_menu_idx].pos[0] - main_menu[curr_menu_idx].width / 2),
@@ -225,6 +232,7 @@ class keylistener_(object):
         self.music=True
         self.Stevens_version=True # set to False if you prefer the default brainFly version
         self.color_mode = True # set to False for non-color stimuli
+        self.use_gol = True # set to False for calibration without the game of life
 
         if platform.system() == 'Windows':
             self.skip_suffix = ' %'
@@ -276,6 +284,12 @@ class keylistener_(object):
                 high_res_indicator.image = icons[int(self.color_mode)+5]
                 self.update_menu = 1        
 
+            # switching game of life   
+            if ev_ == 'u':
+                self.use_gol = not self.use_gol
+                GOL_indicator.image = icons[int(self.use_gol) + 7]
+                self.update_menu = 1    
+
         # loop the menu
         if self.curr_menu_idx < 0:
             self.curr_menu_idx = 3
@@ -305,7 +319,7 @@ class keylistener_(object):
                 if self.curr_menu_idx == 1:
                     try: subprocess.Popen(scripts_[1]+self.skip_suffix,shell=True);print(scripts_[1]+self.skip_suffix);time.sleep(15)
                     except: pass
-                    try: subprocess.Popen(scripts_[3]+' '+str(int(self.color_mode))+self.skip_suffix, shell=True);print(scripts_[3]+ ' ' + str(int(self.color_mode)) + self.skip_suffix)
+                    try: subprocess.Popen(scripts_[3]+' '+str(int(self.color_mode))+' '+str(int(self.use_gol))+self.skip_suffix, shell=True);print(scripts_[3]+ ' ' + str(int(self.color_mode)) +' '+str(int(self.use_gol)) + self.skip_suffix)
                     except: pass
 
                 # call Game
@@ -331,7 +345,7 @@ time.sleep(10)
 mywin_splash.close()
 
 # create screen
-mywin,main_menu,EEG_indicator,Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
+mywin,main_menu,EEG_indicator,GOL_indicator,Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
 
 # create key-listener
 get_keys=keylistener_()

@@ -32,9 +32,12 @@ import platform
 if __name__ == "__main__":
     braincontrol = 1#int(sys.argv[1])
     ##### BCI enable #######
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         color = int(sys.argv[1])
-        use_gol = 1 #int(sys.argv[2])
+        use_gol = 1 
+    elif len(sys.argv) == 3: 
+        color = int(sys.argv[1])
+        use_gol = int(sys.argv[2])
     else:
         color = 1
         use_gol = 1
