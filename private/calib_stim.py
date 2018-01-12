@@ -366,7 +366,7 @@ while (numtrials_per_cond_act.sum(0)<numtrials_per_cond).any()==True & (not done
         data_ = gol().reshape(grid_size, grid_size) + 0
         data_[data_ == 0] = -1
     else:
-        data_ = np.zeros((grid_size, grid_size))
+        data_ = -np.ones((grid_size, grid_size),dtype='float32')
 
     stim.pattern1.setImage(data_)
     numtrials_per_cond_act=stim(numtrials_per_cond_act)
