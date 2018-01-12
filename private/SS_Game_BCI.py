@@ -351,7 +351,7 @@ hit_score = 0
 aliens_total = 0
 
 # Frequencies
-left_hz = 20 #16
+left_hz = 15 #16
 right_hz = 10 #8
 clock_FPS = 43 #35 # FPS 43 works!
 
