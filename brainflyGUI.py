@@ -146,6 +146,8 @@ def setupMainwindow(winsize=[800,600]):
     icons.append(Image.open(main_path + assetpath + os.sep + "high_res_on.png"))
     icons.append(Image.open(main_path+assetpath+os.sep+"GOL_on_icon.png"))
     icons.append(Image.open(main_path+assetpath+os.sep+"GOL_off_icon.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"color_on_icon.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"color_off_icon.png"))
 
     # setup GUI
     mywin=visual.Window(winsize,units='pix',monitor='testMonitor',winType="pygame")
@@ -162,8 +164,12 @@ def setupMainwindow(winsize=[800,600]):
 
     
     # GOL indicator
-    GOL_indicator=visual.ImageStim(mywin,image=icons[7],pos=[-300,150],units='pix', size=(50,50))
+    GOL_indicator=visual.ImageStim(mywin,image=icons[7],pos=[-300,150],units='pix', size=(75,75))
     GOL_indicator.setAutoDraw(True)
+
+    # Color indicator
+    Color_indicator=visual.ImageStim(mywin,image=icons[9],pos=[-300,75],units='pix', size=(75,75))
+    Color_indicator.setAutoDraw(True)
 
     # Keyboard indicator
     Keyboard_=visual.ImageStim(mywin,image=icons[4],pos=[-300,-250])
@@ -199,7 +205,7 @@ def setupMainwindow(winsize=[800,600]):
     pygame.mixer.music.load(main_path+assetpath+os.sep+'backgroundmusic.wav')
     pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
-    return mywin,main_menu,EEG_indicator,GOL_indicator,Keyboard_indicator,high_res_indicator,icons
+    return mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator,Keyboard_indicator,high_res_indicator,icons
 
 def updateMenu():
     main_menu[4].start = ((main_menu[curr_menu_idx].pos[0] - main_menu[curr_menu_idx].width / 2),
@@ -256,7 +262,7 @@ class keylistener_(object):
             # switching game mode
             if ev_ == 'g':
                 self.Stevens_version=not self.Stevens_version
-                #high_res_indicator.image = icons[int(self.Stevens_version)+5]
+                high_res_indicator.image = icons[int(self.Stevens_version)+5]
                 self.update_menu = 1
 
             # switching eeg mode
@@ -281,13 +287,13 @@ class keylistener_(object):
             # switching color mode    
             if ev_ == 'c':
                 self.color_mode = not self.color_mode
-                high_res_indicator.image = icons[int(self.color_mode)+5]
+                Color_indicator.image = icons[int(not self.color_mode)+9]
                 self.update_menu = 1        
 
             # switching game of life   
             if ev_ == 'u':
                 self.use_gol = not self.use_gol
-                GOL_indicator.image = icons[int(self.use_gol) + 7]
+                GOL_indicator.image = icons[int(not self.use_gol) + 7]
                 self.update_menu = 1    
 
         # loop the menu
@@ -345,7 +351,7 @@ time.sleep(10)
 mywin_splash.close()
 
 # create screen
-mywin,main_menu,EEG_indicator,GOL_indicator,Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
+mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator,Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
 
 # create key-listener
 get_keys=keylistener_()
