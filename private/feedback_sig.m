@@ -17,12 +17,13 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   end;
   pause(1);
 end;
-load clsfr
-trlen_ms=1000;%samples
+clsfr=uigetfile([pwd filesep filesep '..' filesep 'classifiers' filesep '*.mat']);
+load(clsfr)
+trlen_samp=250;%samples
 state=hdr;
 
 while true
-[data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_ms,'exitSet',{'data'});
+[data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_samp,'exitSet',{'data'});
 if devents(end).value==0
     break
 end
