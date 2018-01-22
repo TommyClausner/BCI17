@@ -417,8 +417,8 @@ while not done:
             pred = events.value
             direction = pred
             sendEvent('stim.target', 1)
-        else:
-            direction = 0
+        
+            
 
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT] or (direction == -1):
