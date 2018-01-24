@@ -17,8 +17,8 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   end;
   pause(1);
 end;
-clsfr=uigetfile([pwd filesep filesep '..' filesep 'classifiers' filesep '*.mat']);
-load(clsfr)
+[clsfra,path]=uigetfile([pwd filesep filesep '..' filesep 'classifiers' filesep '*.mat']);
+clsfr=load([path,clsfra])
 trlen_samp=250;%samples
 state=hdr;
 
