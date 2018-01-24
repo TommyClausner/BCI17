@@ -148,6 +148,9 @@ def setupMainwindow(winsize=[800,600]):
     icons.append(Image.open(main_path+assetpath+os.sep+"GOL_off_icon.png"))
     icons.append(Image.open(main_path+assetpath+os.sep+"color_on_icon.png"))
     icons.append(Image.open(main_path+assetpath+os.sep+"color_off_icon.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"time_on.png"))
+    icons.append(Image.open(main_path+assetpath+os.sep+"time_off.png"))
+
 
     # setup GUI
     mywin=visual.Window(winsize,units='pix',monitor='testMonitor',winType="pygame")
@@ -170,6 +173,10 @@ def setupMainwindow(winsize=[800,600]):
     # Color indicator
     Color_indicator=visual.ImageStim(mywin,image=icons[9],pos=[-300,75],units='pix', size=(75,75))
     Color_indicator.setAutoDraw(True)
+
+    # Time indicator
+    Time_indicator=visual.ImageStim(mywin,image=icons[12],pos=[325,-150],units='pix', size=(75,75))
+    Time_indicator.setAutoDraw(True)
 
     # Keyboard indicator
     Keyboard_=visual.ImageStim(mywin,image=icons[4],pos=[-300,-250])
@@ -205,7 +212,7 @@ def setupMainwindow(winsize=[800,600]):
     pygame.mixer.music.load(main_path+assetpath+os.sep+'backgroundmusic.wav')
     pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
-    return mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator,Keyboard_indicator,high_res_indicator,icons
+    return mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator, Time_indicator, Keyboard_indicator,high_res_indicator,icons
 
 def updateMenu():
     main_menu[4].start = ((main_menu[curr_menu_idx].pos[0] - main_menu[curr_menu_idx].width / 2),
@@ -239,6 +246,7 @@ class keylistener_(object):
         self.Stevens_version=True # set to False if you prefer the default brainFly version
         self.color_mode = True # set to False for non-color stimuli
         self.use_gol = True # set to False for calibration without the game of life
+        self.use_timer = False # set to True to set time limit in game to 90 seconds
 
         if platform.system() == 'Windows':
             self.skip_suffix = ' %'
@@ -294,7 +302,13 @@ class keylistener_(object):
             if ev_ == 'u':
                 self.use_gol = not self.use_gol
                 GOL_indicator.image = icons[int(not self.use_gol) + 7]
-                self.update_menu = 1    
+                self.update_menu = 1  
+
+            # switching time limit in game 
+            if ev_ == 't':
+                self.use_timer = not self.use_timer
+                Time_indicator.image = icons[int(not self.use_timer) + 11]
+                self.update_menu = 1        
 
         # loop the menu
         if self.curr_menu_idx < 0:
@@ -333,7 +347,7 @@ class keylistener_(object):
                     if not self.Keyboard_is_on:
                         try: subprocess.Popen(scripts_[2]+self.skip_suffix, shell=True);print(scripts_[2]+self.skip_suffix);time.sleep(15)
                         except: pass
-                    try: subprocess.Popen(scripts_[4+int(self.Stevens_version)]+self.braincontrol + ' ' + str(int(self.color_mode)) + self.skip_suffix, shell=True);print(scripts_[4+int(self.Stevens_version)]+self.braincontrol+ ' ' + str(int(self.color_mode)) +self.skip_suffix)
+                    try: subprocess.Popen(scripts_[4+int(self.Stevens_version)]+self.braincontrol + ' ' + str(int(self.color_mode)) + ' ' + str(int(self.use_timer)) + self.skip_suffix, shell=True);print(scripts_[4+int(self.Stevens_version)]+self.braincontrol+ ' ' + str(int(self.color_mode)) + ' ' + str(int(self.use_timer))+self.skip_suffix)
                     except: pass
 
         return self.curr_menu_idx, self.update_menu, self.done
@@ -351,7 +365,7 @@ time.sleep(10)
 mywin_splash.close()
 
 # create screen
-mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator,Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
+mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator, Time_indicator, Keyboard_indicator,high_res_indicator,icons=setupMainwindow()
 
 # create key-listener
 get_keys=keylistener_()

@@ -34,14 +34,18 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         braincontrol = int(sys.argv[1])
         color = int(sys.argv[2])
+        use_timer = int(sys.argv[3])
     else:
         braincontrol = 0
         color = 1
+        use_timer = 0
 else:
     braincontrol = 0
     color = 1
+    use_timer = 0
 print(braincontrol)
 print(color)
+print(use_timer)
 if braincontrol:
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),bufferpath))
     import FieldTrip
@@ -303,8 +307,8 @@ else:
 alien_red = pygame.transform.scale(alien_red, (int(ScreenWidth * 0.15), int(ScreenHeight * 0.15)))
 alien_blue = pygame.transform.scale(alien_blue, (int(ScreenWidth * 0.15), int(ScreenHeight * 0.15)))
 
-alien_red_static = pygame.transform.scale(alien_red, (int(ScreenWidth * 0.13), int(ScreenHeight * 0.13)))
-alien_blue_static = pygame.transform.scale(alien_blue, (int(ScreenWidth * 0.13), int(ScreenHeight * 0.13)))
+alien_red_static = pygame.transform.scale(alien_red, (int(ScreenWidth * 0.17), int(ScreenHeight * 0.17)))
+alien_blue_static = pygame.transform.scale(alien_blue, (int(ScreenWidth * 0.17), int(ScreenHeight * 0.17)))
 
 alien_bonus = pygame.image.load(assetpath+"alien_green.png").convert_alpha()
 alien_bonus = pygame.transform.scale(alien_bonus, (int(ScreenWidth * 0.1), int(ScreenHeight * 0.1)))
@@ -404,6 +408,10 @@ direction=[]
 ## Game loop
 done = False
 
+TIME_LIMIT = 90 # 90 seconds
+# Check time limit reached
+check = lambda t: (time.time() - start_time) < TIME_LIMIT if t else 1
+
 while not done:
 
     for event in pygame.event.get():
@@ -417,8 +425,8 @@ while not done:
             pred = events.value
             direction = pred
             sendEvent('stim.target', 1)
-        else:
-            direction = 0
+        
+            
 
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT] or (direction == -1):
@@ -603,6 +611,13 @@ while not done:
             if braincontrol:
                 sendEvent('stim.target', 0)
             done = True
+
+    # if time limit set, then check if time limit has been reached
+    if not check(use_timer):
+        if braincontrol:
+            sendEvent('stim.target', 0)
+        done = True    
+                
 pygame.quit() # Close window
 
 ### BCI End game sign
