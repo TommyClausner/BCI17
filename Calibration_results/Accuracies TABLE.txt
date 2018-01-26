@@ -1,0 +1,13 @@
+###### ROBERT ######
+No Gol, yes Col: 72.5%
+NoNo: 87.1%
+Yes Gol, no Col: 81.6%
+YesYes: 78.2%
+
+
+
+#### STEVEN #####
+No Gol, yes Col: 87.9%
+NoNo: 81.8%
+Yes Gol, no Col: 88.8
+YesYes: 82.1%
