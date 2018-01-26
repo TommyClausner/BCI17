@@ -4,6 +4,20 @@ from pygame.locals import *
 from time import sleep, time
 import os
 import matplotlib
+import re
+
+
+
+def sorted_nicely( l ):
+    """ Sorts the given iterable in the way that is expected.
+ 
+    Required arguments:
+    l -- The iterable to be sorted.
+ 
+    """
+    convert = lambda text: int(text) if text.isdigit() else 0
+    alphanum_key = lambda key: [ convert(c) for c in re.split('(\d+)', key) ]
+    return sorted(l, key = alphanum_key)
 
 matplotlib.rcParams['toolbar']='None'
 
@@ -140,11 +154,11 @@ class Alien(object):
         # self.Force = pygame.draw.line(self.screen, (255, 0, 0), (0, self._y_now), (screen.get_size()[0], self._y_now), 1)
         pygame.draw.line(screen, (255, 0, 0), (0, self._y_now),(self._x - self.size, self._y_now), 1)
         pygame.draw.line(screen, (255, 0, 0), (self._x + self.size, self._y_now),(self.screen.get_size()[0], self._y_now), 1)
-
-        if (time.time() - self.time_hz) >= (1.0 / self.hz):
+        self.screen.blit(self.image, (self._x - self.image.get_rect()[2]/2, self._y_now -  self.image.get_rect()[3]/2))
+        #if (time.time() - self.time_hz) >= (1.0 / self.hz):
             # self.sprite = pygame.draw.circle(self.screen, self.color, (self._x, self._y_now), self.size)
-            self.screen.blit(self.image, (self._x - self.image.get_rect()[2]/2, self._y_now -  self.image.get_rect()[3]/2))
-            self.time_hz = time.time()
+            
+         #   self.time_hz = time.time()
         pass
 
 class BonusAlien(object):
@@ -408,191 +422,226 @@ direction=[]
 ## Game loop
 done = False
 
+NAME = 'STV'
+WRITTEN = False
 TIME_LIMIT = 90 # 90 seconds
 # Check time limit reached
 check = lambda t: (time.time() - start_time) < TIME_LIMIT if t else 1
 
 while not done:
 
-    for event in pygame.event.get():
-        pass
+    # if time limit set, then check if time limit has been reached
+    if not check(use_timer):
+        if braincontrol:
+            sendEvent('stim.target', 0)
+        screen.fill((0,0,0))
+        screen.blit(background, (0, 0)) 
 
-    # BCI events
-    if braincontrol:
-        events = ftc.getEvents()
-        events = events[-1]
-        if events.type == 'classifier.prediction':
-            pred = events.value
-            direction = pred
-            sendEvent('stim.target', 1)
+        with open('highscore.txt','a') as f:
+            if not WRITTEN:
+                f.write(NAME + '   ' + str(acc) + '%\n')
+                WRITTEN = True
+        with open('highscore.txt','r') as f:
+            highscore = f.readlines()
         
+        sort = sorted_nicely(highscore[4:])
+
+        center = -100
+        pos = -100    
+        for line in highscore[:4]:    
+            screen.blit(pygame.font.SysFont('Consolas', 35).render(line[:-1], True, (0, 255, 0)), (ScreenWidth/2 + center,ScreenHeight/2 + pos))  
+            pos += 25
+
+        count = 0
+        for line in sort[::-1]:    
+            if count > 4:
+                break
+            screen.blit(pygame.font.SysFont('Consolas', 35).render(line[:-1], True, (0, 255, 0)), (ScreenWidth/2 + center,ScreenHeight/2 + pos))  
+            pos += 25
+            count += 1
+
+        screen.blit(pygame.font.SysFont('Consolas', 35).render(text_acc, True, (0, 255, 0)), (ScreenWidth/2 + center-10,ScreenHeight/2 + pos+50))      
+    else:    
+        for event in pygame.event.get():
+            pass
+
+        # BCI events
+        if braincontrol:
+            events = ftc.getEvents()
+            events = events[-1]
+            if events.type == 'classifier.prediction':
+                pred = events.value
+                direction = pred
+                sendEvent('stim.target', 1)
             
+                
 
-    pressed = pygame.key.get_pressed()
-    if pressed[pygame.K_LEFT] or (direction == -1):
-        if (x <= 0): x -= 0 # If window limit left reached, dont do squat.
-        else: x -= int(round(ScreenWidth * MoveSpeed))
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_LEFT] or (direction == -1):
+            if (x <= 0): x -= 0 # If window limit left reached, dont do squat.
+            else: x -= int(round(ScreenWidth * MoveSpeed))
 
-    if pressed[pygame.K_RIGHT] or (direction == 1):
-        if (x >= ScreenWidth - square_side): x +=0 # If window limit right reached, don't do squat.
-        else: x += int(round(ScreenWidth * MoveSpeed))
-    # Check for shots
-    if pressed[pygame.K_SPACE] and (space_tmp==0): space_tmp=1 # Now you can check for release space
+        if pressed[pygame.K_RIGHT] or (direction == 1):
+            if (x >= ScreenWidth - square_side): x +=0 # If window limit right reached, don't do squat.
+            else: x += int(round(ScreenWidth * MoveSpeed))
+        # Check for shots
+        if pressed[pygame.K_SPACE] and (space_tmp==0): space_tmp=1 # Now you can check for release space
 
-    if (event.type == pygame.KEYUP and event.key == pygame.K_SPACE) and space_tmp: # If space pushed and released
-        balls.append(Cannonball(screen, x + square_side/2, y + square_side/2))
-        space_tmp = 0 # Now don't check for release anymore
-        shots_fired += 1
+        if (event.type == pygame.KEYUP and event.key == pygame.K_SPACE) and space_tmp: # If space pushed and released
+            balls.append(Cannonball(screen, x + square_side/2, y + square_side/2))
+            space_tmp = 0 # Now don't check for release anymore
+            shots_fired += 1
 
-    if (time.time() - fire_last) >= (1.0/fire_hz):
-        balls.append(Cannonball(screen, x + square_side/2, y + square_side/2))
-        space_tmp = 0 # Now don't check for release anymore
-        shots_fired += 1
-        fire_last = time.time()
+        if (time.time() - fire_last) >= (1.0/fire_hz):
+            balls.append(Cannonball(screen, x + square_side/2, y + square_side/2))
+            space_tmp = 0 # Now don't check for release anymore
+            shots_fired += 1
+            fire_last = time.time()
 
-    # Set screen dark for update
-    screen.fill((0, 0, 0))
-    screen.blit(background, (0, 0))
+        # Set screen dark for update
+        screen.fill((0, 0, 0))
+        screen.blit(background, (0, 0))
 
-    # Draw constant emergency SSVEP's
-    if ((time.time() - left_time_IC) >= (1.0 / left_hz)):
-        screen.blit(alien_red_static, (0, ScreenHeight - alien_red_static.get_rect()[3]))
-        left_time_IC = time.time()
+        # Draw constant emergency SSVEP's
+        if ((time.time() - left_time_IC) >= (1.0 / left_hz)):
+            screen.blit(alien_red_static, (0, ScreenHeight - alien_red_static.get_rect()[3]))
+            left_time_IC = time.time()
 
-    if ((time.time() - right_time_IC) >= (1.0 / right_hz)):
-        screen.blit(alien_blue_static, (ScreenWidth - alien_blue_static.get_rect()[2], ScreenHeight - alien_blue_static.get_rect()[3]))
+        if ((time.time() - right_time_IC) >= (1.0 / right_hz)):
+            screen.blit(alien_blue_static, (ScreenWidth - alien_blue_static.get_rect()[2], ScreenHeight - alien_blue_static.get_rect()[3]))
 
-        right_time_IC = time.time()
-
-
-    # Draw the cannon position
-    screen.blit(space_ship,(int(x - space_ship.get_rect()[2]/3.5), y))
+            right_time_IC = time.time()
 
 
-    # Create aliens
-    if ((time.time() - alien_time) >= 3) or alien_start:
-        x_position = np.random.randint(0, ScreenWidth)
-        aliens_total += 1 # For accuracy!
-        if x_position >= (ScreenWidth/2.0):
-            aliens.append(Alien(screen, x_position, alienColorRight, right_hz, alien_blue))
-            alien_time = time.time()
-            alien_start = 0
-        else:
-            aliens.append(Alien(screen, x_position, alienColorLeft, left_hz, alien_red))
-            alien_time = time.time()
-            alien_start = 0
+        # Draw the cannon position
+        screen.blit(space_ship,(int(x - space_ship.get_rect()[2]/3.5), y))
 
 
-    # Create Bonus Alien
-    if ((time.time() - bonus_time) >= bonus_secs) and (float(np.random.uniform(0, 1, 1)) <= bonus_prob):
-        aliens_total += 1 # For accuracy!
-        x_position = np.random.randint(0, ScreenWidth)
-        y_position = np.random.randint(0, int(ScreenHeight * 0.8))
-        bonusaliens.append(BonusAlien(screen, x_position, y_position, alien_bonus))
-        bonus_time = time.time()
+        # Create aliens
+        if ((time.time() - alien_time) >= 3) or alien_start:
+            x_position = np.random.randint(0, ScreenWidth)
+            aliens_total += 1 # For accuracy!
+            if x_position >= (ScreenWidth/2.0):
+                aliens.append(Alien(screen, x_position, alienColorRight, right_hz, alien_blue))
+                alien_time = time.time()
+                alien_start = 0
+            else:
+                aliens.append(Alien(screen, x_position, alienColorLeft, left_hz, alien_red))
+                alien_time = time.time()
+                alien_start = 0
 
-    # Update balls position and delete if hit forcefield or out of FOV
-    if len(balls)>0:
-        for i in list(reversed(range(len(balls)))):  # Reversed because if 1 is del, index out of range..
-            balls[i].move()
 
-            if balls[i].destroy:
-                del balls[i]
+        # Create Bonus Alien
+        if ((time.time() - bonus_time) >= bonus_secs) and (float(np.random.uniform(0, 1, 1)) <= bonus_prob):
+            aliens_total += 1 # For accuracy!
+            x_position = np.random.randint(0, ScreenWidth)
+            y_position = np.random.randint(0, int(ScreenHeight * 0.8))
+            bonusaliens.append(BonusAlien(screen, x_position, y_position, alien_bonus))
+            bonus_time = time.time()
 
-            if len(aliens)> 0:
-                if hit_forcefield(aliens[0], balls[i]):
+        # Update balls position and delete if hit forcefield or out of FOV
+        if len(balls)>0:
+            for i in list(reversed(range(len(balls)))):  # Reversed because if 1 is del, index out of range..
+                balls[i].move()
+
+                if balls[i].destroy:
                     del balls[i]
 
-    # Draw Bonus Alien and remove if hit
-    if len(bonusaliens) > 0:
-        for i in list(reversed(range(len(bonusaliens)))):
-            bonusaliens[i].update()
-
-            if bonusaliens[i].destroy:
-                del bonusaliens[i]
-
-        if (len(balls) > 0) and (len(bonusaliens) > 0):  # Looks for a hit by ball
-            for i in list(reversed(range(len(bonusaliens)))):
-                if len(balls) > 0:
-                    for u in list(reversed(range(len(balls)))):
-                        if len(bonusaliens) > 0 and len(balls) > 0:
-                            if hit_alien(bonusaliens[i], balls[u]):
-                                explosion_pos = (bonusaliens[i]._x - bonusaliens[i].size*2, bonusaliens[i]._y_now - bonusaliens[i].size*3)
-                                show_explosion = 1
-                                del bonusaliens[i]
-                                del balls[u]
-                                hit_score += 1
-
-    # Move aliens and remove if hit or out of range
-    if len(aliens) > 0:
-        for i in list(reversed(range(len(aliens)))):
-            aliens[i].move()
-
-            if aliens[i].destroy:
-                del aliens[i]
-
-        if len(balls) > 0:  # Remove alien if hit
-            for i in list(reversed(range(len(balls)))):
-                if len(aliens) > 0:
-                    if hit_alien(aliens[0], balls[i]):
-                        explosion_pos = (aliens[0]._x - aliens[0].size, int(aliens[0]._y_now - aliens[0].size*1.5))
-                        show_explosion = 1
-                        del aliens[0]
+                if len(aliens)> 0:
+                    if hit_forcefield(aliens[0], balls[i]):
                         del balls[i]
-                        hit_score += 1
 
-    # Explosion
-    if show_explosion:
-        explosions.append(explosionanim(screen, explosion_gif, explosion_pos))
-        show_explosion = 0
+        # Draw Bonus Alien and remove if hit
+        if len(bonusaliens) > 0:
+            for i in list(reversed(range(len(bonusaliens)))):
+                bonusaliens[i].update()
 
-    for exp_ in explosions:
-        if exp_.frame_counter > 15:
-            explosions.remove(exp_)
-        else:
-            exp_()
+                if bonusaliens[i].destroy:
+                    del bonusaliens[i]
 
-    # Text time on screen
-    now_time = time.time()
-    time_played = round(now_time - start_time, 2)
-    text_time = 'Time played: ' + str(time_played) + 's'
-    text = font.render(text_time, True, textColor)
-    screen.blit(text, (x_time, text_y))
+            if (len(balls) > 0) and (len(bonusaliens) > 0):  # Looks for a hit by ball
+                for i in list(reversed(range(len(bonusaliens)))):
+                    if len(balls) > 0:
+                        for u in list(reversed(range(len(balls)))):
+                            if len(bonusaliens) > 0 and len(balls) > 0:
+                                if hit_alien(bonusaliens[i], balls[u]):
+                                    explosion_pos = (bonusaliens[i]._x - bonusaliens[i].size*2, bonusaliens[i]._y_now - bonusaliens[i].size*3)
+                                    show_explosion = 1
+                                    del bonusaliens[i]
+                                    del balls[u]
+                                    hit_score += 1
 
-    # Text shots on screen
-    text_shots = 'Shots fired: ' + str(shots_fired)
-    text = font.render(text_shots, True, textColor)
-    screen.blit(text, (x_shots, text_y))
+        # Move aliens and remove if hit or out of range
+        if len(aliens) > 0:
+            for i in list(reversed(range(len(aliens)))):
+                aliens[i].move()
 
-    # Text score
-    text_hits = 'Hits: ' + str(hit_score)
-    text = font.render(text_hits, True, textColor)
-    screen.blit(text, (x_score, text_y))
+                if aliens[i].destroy:
+                    del aliens[i]
 
-    # Text accuracy
-    text_acc = 'Accuracy: ' + str(round(100 * hit_score/(aliens_total +0.000001),1)) + '%' # aliens_total used to be shots_fired!
-    text = font.render(text_acc, True, textColor)
-    screen.blit(text, (x_accuracy, text_y))
+            if len(balls) > 0:  # Remove alien if hit
+                for i in list(reversed(range(len(balls)))):
+                    if len(aliens) > 0:
+                        if hit_alien(aliens[0], balls[i]):
+                            explosion_pos = (aliens[0]._x - aliens[0].size, int(aliens[0]._y_now - aliens[0].size*1.5))
+                            show_explosion = 1
+                            del aliens[0]
+                            del balls[i]
+                            hit_score += 1
+
+        # Explosion
+        if show_explosion:
+            explosions.append(explosionanim(screen, explosion_gif, explosion_pos))
+            show_explosion = 0
+
+        for exp_ in explosions:
+            if exp_.frame_counter > 15:
+                explosions.remove(exp_)
+            else:
+                exp_()
+
+        # Text time on screen
+        now_time = time.time()
+        time_played = round(now_time - start_time, 2)
+        text_time = 'Time played: ' + str(time_played) + 's'
+        text = font.render(text_time, True, textColor)
+        screen.blit(text, (x_time, text_y))
+
+        # Text shots on screen
+        text_shots = 'Shots fired: ' + str(shots_fired)
+        text = font.render(text_shots, True, textColor)
+        screen.blit(text, (x_shots, text_y))
+
+        # Text score
+        text_hits = 'Hits: ' + str(hit_score)
+        text = font.render(text_hits, True, textColor)
+        screen.blit(text, (x_score, text_y))
+
+        # Text accuracy
+        acc = round(100 * hit_score/(aliens_total +0.000001),1)
+        text_acc = 'Accuracy: ' + str(acc) + '%' # aliens_total used to be shots_fired!
+        text = font.render(text_acc, True, textColor)
+        screen.blit(text, (x_accuracy, text_y))
 
 
-    # Text FPS
-    text_fps = str(now_FPS)
-    text = font_FPS.render(text_fps, True, (255,255,0))
-    screen.blit(text, (x_FPS, text_y))
+        # Text FPS
+        text_fps = str(now_FPS)
+        text = font_FPS.render(text_fps, True, (255,255,0))
+        screen.blit(text, (x_FPS, text_y))
 
 
-    # Text statics
-    text_static = '|'
-    text = font.render(text_static, True, textColor)
-    screen.blit(text, (x_static, text_y))
+        # Text statics
+        text_static = '|'
+        text = font.render(text_static, True, textColor)
+        screen.blit(text, (x_static, text_y))
 
-    text_static = '|'
-    text = font.render(text_static, True, textColor)
-    screen.blit(text, (x_static2, text_y))
+        text_static = '|'
+        text = font.render(text_static, True, textColor)
+        screen.blit(text, (x_static2, text_y))
 
-    text_static = '|'
-    text = font.render(text_static, True, textColor)
-    screen.blit(text, (x_static3, text_y))
+        text_static = '|'
+        text = font.render(text_static, True, textColor)
+        screen.blit(text, (x_static3, text_y))
 
 
     # Update screen + check FPS
@@ -612,14 +661,21 @@ while not done:
                 sendEvent('stim.target', 0)
             done = True
 
-    # if time limit set, then check if time limit has been reached
-    if not check(use_timer):
-        if braincontrol:
-            sendEvent('stim.target', 0)
-        done = True    
-                
+
+    
+#if use_timer:
+    # Set screen dark for update
+ #   screen.fill((0,0,0))
+  #  screen.blit(background, (0, 0)) 
+    #screen.blit(pygame.font.SysFont('Arial', 25).render('Accuracy: ' + text_acc, True, (0, 255, 0)), (0,0))  
+   # pygame.display.flip() 
+    
+
+
 pygame.quit() # Close window
 
+
+    
 ### BCI End game sign
 if braincontrol:
     sendEvent('stim.target', 0)
