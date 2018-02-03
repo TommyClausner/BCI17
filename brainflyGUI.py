@@ -256,56 +256,56 @@ class keylistener_(object):
     def __call__(self, ev_):
         if len(ev_) > 0: # ensure that keyboard events exist
 
-            ev_ = ev_[-1]  # use lates event
+            #ev_ = ev_[-1]  # use lates event
 
             # navigation in main window
-            if ev_ == 'up':
+            if ev_ == 'up' or ev_[pygame.K_UP]:
                 self.curr_menu_idx -= 1
                 self.update_menu = 1
 
-            if ev_ == 'down':
+            if ev_ == 'down' or ev_[pygame.K_DOWN]:
                 self.curr_menu_idx += 1
                 self.update_menu = 1
 
             # switching game mode
-            if ev_ == 'g':
+            if ev_ == 'g' or ev_[pygame.K_g]:
                 self.Stevens_version=not self.Stevens_version
                 high_res_indicator.image = icons[int(self.Stevens_version)+5]
                 self.update_menu = 1
 
             # switching eeg mode
-            if ev_ == 'e':
+            if ev_ == 'e' or ev_[pygame.K_e]:
                 self.EEG_is_on = not self.EEG_is_on
                 EEG_indicator.image = icons[int(self.EEG_is_on)]
                 self.update_menu = 1
                 debug_mode(not self.EEG_is_on)
 
             # switching music on/off
-            if ev_ == 'm':
+            if ev_ == 'm' or ev_[pygame.K_m]:
                 self.music = not self.music
                 pygame.mixer.music.set_volume(int(self.music))
 
             # switching keyboard on/off
-            if ev_ == 'k':
+            if ev_ == 'k' or ev_[pygame.K_k]:
                 self.Keyboard_is_on = not self.Keyboard_is_on
                 Keyboard_indicator.image = icons[int(self.Keyboard_is_on) + 2]
                 self.braincontrol=' '+str(int(not self.Keyboard_is_on))
                 self.update_menu = 1
 
             # switching color mode    
-            if ev_ == 'c':
+            if ev_ == 'c' or ev_[pygame.K_c]:
                 self.color_mode = not self.color_mode
                 Color_indicator.image = icons[int(not self.color_mode)+9]
                 self.update_menu = 1        
 
             # switching game of life   
-            if ev_ == 'u':
+            if ev_ == 'u' or ev_[pygame.K_u]:
                 self.use_gol = not self.use_gol
                 GOL_indicator.image = icons[int(not self.use_gol) + 7]
                 self.update_menu = 1  
 
             # switching time limit in game 
-            if ev_ == 't':
+            if ev_ == 't' or ev_[pygame.K_t]:
                 self.use_timer = not self.use_timer
                 Time_indicator.image = icons[int(not self.use_timer) + 11]
                 self.update_menu = 1        
@@ -318,7 +318,7 @@ class keylistener_(object):
             self.curr_menu_idx = 0
 
         # check selection
-        if ev_ == 'return':
+        if ev_ == 'return' or ev_[pygame.K_ESCAPE] or ev_[pygame.K_RETURN]:
 
             # 'exit' was selected
             if self.curr_menu_idx == 3:
@@ -373,8 +373,8 @@ get_keys=keylistener_()
 # run GUI
 done=False
 while not done:
-    ev_=event.getKeys()
-    time.sleep(sleep_timer)
+    #ev_=event.getKeys()
+    ev_ =  pygame.key.get_pressed()
     curr_menu_idx,update_menu,done=get_keys(ev_)
     if update_menu: update_menu=updateMenu()
     time.sleep(sleep_timer)
