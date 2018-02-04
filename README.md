@@ -1,5 +1,8 @@
 # BCI17 
 
+
+
+
 ### MATLAB part
 
 There are two relevant MATLAB files: calib_sig.m used to record data and train the classifier and feedback_sig.m / SS_feedback_sig.m for doing the online classification when running the game in BCI mode.
@@ -48,6 +51,8 @@ Commands:
 - Switch EEG mode using 'e'
 - Switch music on/off using 'm'
 - Switch game mode using 'g'
+- Switch on time limit 't'
+- Switch game of life stimulation on / off 'u'
 - use arrow keys to navigate 'up' and 'down'
 - hit 'return' to select
 - during the calibration hit 'esc' to exit
@@ -59,11 +64,7 @@ Further exit commands were added at the end of each MATLAB script to kill the re
 
 Aborting the calibration (hitting 'esc') will cause the classifier to be trained on all available data so far.
 
-### Known Bugs
-- in eeg_quickstart.sh/.bat the file startMobita.sh/.bat crashes -> can't find /dataAcq/buffer/bin/startMobita.sh./.bat
-
-
-# Windows connect mobita:
+### Windows connect mobita:
 - Connect the asus wifi "dongler?"
 - start mobita EEG system
 - Go to D:\Users\Iglohut\Documents\GitHub\BCI17\external\dataAcq -> 10sec wait -> open startMobita_autoconnect_.bat and chose your mobita
