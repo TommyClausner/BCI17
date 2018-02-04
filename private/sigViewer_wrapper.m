@@ -1,3 +1,16 @@
+%     ____            _       ______ _         ____   _____ _____
+%    |  _ \          (_)     |  ____| |       |  _ \ / ____|_   _|
+%    | |_) |_ __ __ _ _ _ __ | |__  | |_   _  | |_) | |      | |
+%    |  _ <| '__/ _` | | '_ \|  __| | | | | | |  _ <| |      | |
+%    | |_) | | | (_| | | | | | |    | | |_| | | |_) | |____ _| |_
+%    |____/|_|  \__,_|_|_| |_|_|    |_|\__, | |____/ \_____|_____|
+%                                       __/ |
+%                                      |___/
+%
+% This functions is used to call the buffer's default signal viewer
+% It is only a wrapper function that finds the current path structure,
+% connects to the buffer and launches the signal viewer (sigViewer.m)
+
 clc
 clear
 close all

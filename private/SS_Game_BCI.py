@@ -1,3 +1,19 @@
+"""
+  ____            _       ______ _         ____   _____ _____
+ |  _ \          (_)     |  ____| |       |  _ \ / ____|_   _|
+ | |_) |_ __ __ _ _ _ __ | |__  | |_   _  | |_) | |      | |
+ |  _ <| '__/ _` | | '_ \|  __| | | | | | |  _ <| |      | |
+ | |_) | | | (_| | | | | | |    | | |_| | | |_) | |____ _| |_
+ |____/|_|  \__,_|_|_| |_|_|    |_|\__, | |____/ \_____|_____|
+                                    __/ |
+                                   |___/
+
+"""
+
+# This function is advanced implementation of the BrainFly game. It can be played with and without keyboard control (EEG mode)
+# In the appendix of the report a users manual is provided.
+
+# import all necessary libraries
 import pygame, sys
 import pygame.locals
 from pygame.locals import *

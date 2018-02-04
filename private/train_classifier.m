@@ -1,3 +1,28 @@
+%     ____            _       ______ _         ____   _____ _____
+%    |  _ \          (_)     |  ____| |       |  _ \ / ____|_   _|
+%    | |_) |_ __ __ _ _ _ __ | |__  | |_   _  | |_) | |      | |
+%    |  _ <| '__/ _` | | '_ \|  __| | | | | | |  _ <| |      | |
+%    | |_) | | | (_| | | | | | |    | | |_| | | |_) | |____ _| |_
+%    |____/|_|  \__,_|_|_| |_|_|    |_|\__, | |____/ \_____|_____|
+%                                       __/ |
+%                                      |___/
+%
+% This functions is used to train a classifier on multiple merged
+% datasets. The functions prompts a dialog to select a EEG cap file that
+% should correspond to the input data provided later. All data located
+% within the /output folder the follows the naming data* will be merged in
+% to one dataset and a classifier will be trained. The classifier result
+% will be saved in \classifiers
+%
+% default settings:
+%
+% trlen_ms=2000;
+% fs = 250; default sampling rate of the Mobita system
+% spatialfilter = 'CAR'
+% freqband = [0.1 1 30 31]
+% badchrm = 0
+% badtrrm = 0
+
 clc
 clear
 close all

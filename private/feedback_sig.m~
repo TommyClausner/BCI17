@@ -7,13 +7,15 @@
 %                                       __/ |
 %                                      |___/
 %
-% This functions is used to record and process calibration data it receives
-% from the buffer. It finds the current path structure,
+% This functions is used to record and process online data it receives
+% from the buffer. It generates a class label (-1 or 1) as a prediction 
+% from the classifier specified. It finds the current path structure,
 % connects to the buffer. Afterwards a selection dialog promts fro the user 
-% to select the respective EEG cap. Once done it starts recording data 
+% to select a pre-trained classifier. Once done it starts recording data 
 % according to the predefined instructions. After receiving the exit event 
 % a classifier is trained on that data. Output data is saved in /output and 
 % classifier results in /classifier
+
 %
 % default settings:
 %
@@ -41,30 +43,17 @@ while ( isempty(hdr) || ~isstruct(hdr) || (hdr.nchans==0) ) % wait for the buffe
   end;
   pause(1);
 end;
+[clsfra,path]=uigetfile([pwd filesep filesep '..' filesep 'classifiers' filesep '*.mat']);
+clsfr=load([path,clsfra])
+trlen_samp=250;%samples
+state=hdr;
 
-CLASSIFIER_PATH = ['..' filesep 'classifiers'];
-DATA_PATH = ['..' filesep 'output']
-
-cap_=uigetfile([pwd filesep filesep '..' filesep 'external' filesep 'resources' filesep 'caps' filesep '*.txt']);
-cap_=cap_(1:end-4);
-
-% length of data that is recorded
-trlen_ms=2000;
-
-sendEvent('calib.start',1)
-[data,devents,state]=buffer_waitData(buffhost,buffport,[],'startSet',{'stim.target'},'exitSet',{'stim.training' 'end'},'trlen_ms',trlen_ms);
-devents(end,:)=[]; % removing last devent entry due to the exit event
-data(end,:)=[]; % removing last data entry due to the exit event
-
-clsfr=buffer_train_ersp_clsfr(data,devents,hdr,'spatialfilter','CAR','freqband',[0.1 1 30 31],'badtrrm',0,'badchrm',0,'capFile',cap_,'overridechnms',1);
-
-num = numel(dir([CLASSIFIER_PATH filesep '*.mat'])) + 1;
-save([CLASSIFIER_PATH filesep 'clsfr' num2str(num)],'-struct','clsfr');
-
-save_data.data = data;
-save_data.devents = devents;
-num = numel(dir([DATA_PATH filesep '*.mat'])) + 1;
-save([DATA_PATH filesep 'data' num2str(num)],'-struct','save_data');
-
-waitfor(gcf)
+while true
+[data,devents,state]=buffer_waitData(buffhost,buffport,state,'startSet',{'stim.target'},'trlen_samp',trlen_samp,'exitSet',{'data'});
+if devents(end).value==0
+    break
+end
+[f,fraw,p]=buffer_apply_ersp_clsfr(data.buf,clsfr);
+sendEvent('classifier.prediction',(f>0)*2-1);
+end
 exit

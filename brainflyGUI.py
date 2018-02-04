@@ -1,3 +1,19 @@
+"""
+  ____            _       ______ _         ____   _____ _____
+ |  _ \          (_)     |  ____| |       |  _ \ / ____|_   _|
+ | |_) |_ __ __ _ _ _ __ | |__  | |_   _  | |_) | |      | |
+ |  _ <| '__/ _` | | '_ \|  __| | | | | | |  _ <| |      | |
+ | |_) | | | (_| | | | | | |    | | |_| | | |_) | |____ _| |_
+ |____/|_|  \__,_|_|_| |_|_|    |_|\__, | |____/ \_____|_____|
+                                    __/ |
+                                   |___/
+
+"""
+
+# This is the actual main window from where everything is administered
+# In the appendix of the report a users manual is provided.
+
+# import all necessary libraries
 import sys,os,time
 import subprocess
 import signal
@@ -8,6 +24,7 @@ from PIL import Image
 import gc
 import pdb
 
+# initializes PyGame window
 def initModules():
     # presetting for some modules
     gc.collect()
@@ -17,25 +34,27 @@ def initModules():
 #pdb.set_trace()
 initModules()
 
+# sets up all path dependencies needed for the GUI to run
 def initPaths():
 
-    # setup relative directories
+    # own path from where the script was run
     main_path=os.path.dirname(os.path.abspath(__file__))+os.sep
 
-
+    # setup relative sub-directories for each component
     BCI_buff_path="external"+os.sep
     bufferpath = BCI_buff_path+"dataAcq"+os.sep+"buffer"+os.sep+"python"
     sigProcPath = BCI_buff_path+"python"+os.sep+"signalProc"
     assetpath="assets"+os.sep+"GUI_grafix"
     functionspath="private"+os.sep
 
-    # add paths
+    # add respective paths
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),main_path+bufferpath))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),main_path+sigProcPath))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),main_path+assetpath))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),main_path+functionspath))
     sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),main_path+BCI_buff_path))
 
+    # get MATLAB and Python root paths from the config.txt file (Additionally the initial configuration for debug mode is read)
     pathsettings=open(main_path+"config.txt","r").read().split("\n")
 
     idx_MATLAB=int([i for i, e in enumerate([str.find(path_,"MATLABroot") for path_ in pathsettings]) if e == 0][0])
@@ -45,23 +64,31 @@ def initPaths():
     # setup roots
     MATLABrootpath=pathsettings[idx_MATLAB][str.find(pathsettings[idx_MATLAB],'=')+1:]
     Pythonrootpath=pathsettings[idx_Python][str.find(pathsettings[idx_Python],'=')+1:]
+
+    # define initial debug mode
     initdebug=bool(int((pathsettings[idx_debug][str.find(pathsettings[idx_debug], '=') + 1:]).replace(' ', '')))
     print(initdebug)
     return MATLABrootpath,Pythonrootpath,main_path,BCI_buff_path,bufferpath,sigProcPath,assetpath,functionspath,initdebug
 
+# calling the function below sets up all folder dependencies necessary for the GUI to run
 MATLABrootpath,Pythonrootpath,main_path,BCI_buff_path,bufferpath,sigProcPath,assetpath,functionspath,initdebug=initPaths()
 
-
+# setting OS specific driver information. Due to various problems with display drivers and the resulting output,
+# it is highly recommended to keep the settings as they are
 def setupOS():
     # setup video drivers
     if platform.system() == 'Windows':
         os.environ['SDL_VIDEODRIVER'] = 'windib'#'directx'
+        # sleep timer is used to limit the number of button press responses to certain maximum (e.g. min 0.09 ~ 11Hz)
         sleep_timer=0.09
     else:
         sleep_timer=0.09
         os.environ['SDL_VIDEODRIVER'] = 'quartz'
     return sleep_timer
 
+# This function is used to kill background processes that are started by the GUI. Within "pids.txt" process IDs are stored,
+# as processes are created. Those IDs will be read and killed. Since this works different on Unix and Windows, the
+# respective implementation varies slightly
 def killbuff(BCI_buff_path_int=BCI_buff_path):
 
     if platform.system() == 'Windows':
@@ -88,19 +115,22 @@ def killbuff(BCI_buff_path_int=BCI_buff_path):
         except: pass
 
 
-
+# This function is used to switch between real EEG and debug mode
 def debug_mode(isdebug=False):
 
+    # Kills all buffer related processes in order to build up the new architecture corresponding to the respective choice
     killbuff()
 
     # run buffer components
     if isdebug:
+        # debug_quickstart.*
         if platform.system() == 'Windows':
             os.chdir(main_path + BCI_buff_path)
             subprocess.Popen('start debug_quickstart.bat %', shell=True)
         else:
             subprocess.Popen(main_path+BCI_buff_path+'debug_quickstart.sh &', shell=True)
     else:
+        # eeg_quickstart.*
         if platform.system() == 'Windows':
             os.chdir(main_path + BCI_buff_path)
             subprocess.Popen('start eeg_quickstart.bat %', shell=True)
@@ -116,13 +146,20 @@ def setupScripts():
     #   (0): Signal Viewer (MATLAB)                     default: /private/sigViewer_wrapper.m
     #   (1): Calibration Signal (MATLAB)                default: /private/calib_sig.m
     #   (2): Feedback Signal (MATLAB)                   default: /private/feedback_sig.m
-    #   (3): Calibration Stimulus (Python)              default: /private/calib_stimpy
+    #   (3): Calibration Stimulus (Python)              default: /private/calib_stim.py
     #   (4): Feedback Stimulus (Python)                 default: /private/brainflyTest.py
     #   (5): Feedback Stimulus v2 (Python)              default: /private/SS_Game_BCI.py
 
-    # The scripts are called in within the key listener object (class below):
+    # The scripts are called within the key listener object (class below):
     # depending on the operating system a suffix will be appended in order to make the system command not wait (% or &)
     # Further a boolean indicating keyboard control will be used in Feedback Stimuli
+
+    # the lines below might seem odd, but what actually happens is that a command is created and send to the default
+    # command line tool in the respective language (Batch or Bash). The command is composed by the respective call
+    # function for the interpreter instance (MATLAB or Python) followed by the command to open the respective script.
+    # In the MATLAB case the script is not called directly but wrapped inside a command. This is due to the fact that
+    # the command line Version of MATLAB does not accept script input, but only command input. For this reason the script
+    # was wrapped inside a "try" statement
 
     scripts_=[]
     scripts_.append(MATLABrootpath+' '+'"'"try;run('"+main_path+functionspath+"sigViewer_wrapper.m""');exit;end;exit"'"')
@@ -133,6 +170,7 @@ def setupScripts():
     scripts_.append(Pythonrootpath+' '+'"'+main_path+functionspath+"SS_Game_BCI.py"+'"')
     return scripts_
 
+# Sets up the main window of the GUI
 def setupMainwindow(winsize=[800,600]):
 
     # load assets
@@ -152,43 +190,43 @@ def setupMainwindow(winsize=[800,600]):
     icons.append(Image.open(main_path+assetpath+os.sep+"time_off.png"))
 
 
-    # setup GUI
+    # setup display
     mywin=visual.Window(winsize,units='pix',monitor='testMonitor',winType="pygame")
 
-    # background
+    # define background
     BG_=visual.ImageStim(mywin,image=Image.open(main_path+assetpath+os.sep+"GUI_background.png"))
     BG_.setAutoDraw(True)
 
-    # EEG indicator
+    # EEG indicator logo
     EEG_indicator=visual.ImageStim(mywin,image=icons[int(not initdebug)],pos=[-300,250],units='pix')
     EEG_indicator.setAutoDraw(True)
     EEG_indicator_text=visual.TextStim(mywin,text='EEG mode',font='Futura',pos=[-300,210],units='pix',height=30)
     EEG_indicator_text.setAutoDraw(True)
 
     
-    # GOL indicator
+    # GOL indicator logo
     GOL_indicator=visual.ImageStim(mywin,image=icons[7],pos=[-300,150],units='pix', size=(75,75))
     GOL_indicator.setAutoDraw(True)
 
-    # Color indicator
+    # Color indicator logo
     Color_indicator=visual.ImageStim(mywin,image=icons[9],pos=[-300,75],units='pix', size=(75,75))
     Color_indicator.setAutoDraw(True)
 
-    # Time indicator
+    # Time indicator logo
     Time_indicator=visual.ImageStim(mywin,image=icons[12],pos=[325,-150],units='pix', size=(75,75))
     Time_indicator.setAutoDraw(True)
 
-    # Keyboard indicator
+    # Keyboard indicator logo
     Keyboard_=visual.ImageStim(mywin,image=icons[4],pos=[-300,-250])
     Keyboard_.setAutoDraw(True)
     Keyboard_indicator=visual.ImageStim(mywin,image=icons[3],pos=[-200,-250])
     Keyboard_indicator.setAutoDraw(True)
 
-    # High res indicator
+    # eye-candy indicator logo
     high_res_indicator = visual.ImageStim(mywin, image=icons[6], pos=[325, -250])
     high_res_indicator.setAutoDraw(True)
 
-    # main menu
+    # main menu - All Text based main choices within the GUI are defined here
     main_menu=[]
     main_menu.append(visual.TextStim(mywin,text='EEG Viewer',font='Helvetica',pos=[0,-50],units='pix',height=36))
     main_menu[0].setAutoDraw(True)
@@ -206,14 +244,17 @@ def setupMainwindow(winsize=[800,600]):
                               end=((main_menu[2].pos[0]+main_menu[2].width/2), (main_menu[2].pos[1]-main_menu[2].height/2)),units='pix'))
     main_menu[4].setAutoDraw(True)
 
+    # pre-initialize audio
     pygame.mixer.pre_init(44100, 16, 2, 4096)
     pygame.mixer.init(44100, -16,2,2048)
 
+    # initialize background music
     pygame.mixer.music.load(main_path+assetpath+os.sep+'backgroundmusic.wav')
     pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
     return mywin,main_menu,EEG_indicator,GOL_indicator,Color_indicator, Time_indicator, Keyboard_indicator,high_res_indicator,icons
 
+# update line under the respective menu option of choice
 def updateMenu():
     main_menu[4].start = ((main_menu[curr_menu_idx].pos[0] - main_menu[curr_menu_idx].width / 2),
                           (main_menu[curr_menu_idx].pos[1] - main_menu[curr_menu_idx].height / 2))
@@ -223,6 +264,9 @@ def updateMenu():
     mywin.flip()
     return 0
 
+# splash screen that is displayed when starting the GUI, while buffer functions are initialized in the background
+# This was done to ensure that everything is loaded / initialized properly before any of the critical functions are called.
+# This way crashes could mostly be avoided
 def splashscreen_():
     #pdb.set_trace()
     mywin_splash = visual.Window([400,300], units='pix', monitor='testMonitor', winType="pygame")
@@ -231,6 +275,10 @@ def splashscreen_():
     mywin_splash.flip()
     return mywin_splash
 
+# PyGame Key-listener
+# Processes all input from the user in the main window. After changing a respective setting, processes and commands
+# that the actual change applies to will be selected. When then using one of the main GUI functions the respective
+# settings apply to the respective choices.
 class keylistener_(object):
 
     def __init__(self):
@@ -352,6 +400,7 @@ class keylistener_(object):
 
         return self.curr_menu_idx, self.update_menu, self.done
 
+# show splash screen
 mywin_splash=splashscreen_()
 
 sleep_timer=setupOS()
@@ -378,6 +427,7 @@ while not done:
     curr_menu_idx,update_menu,done=get_keys(ev_)
     if update_menu: update_menu=updateMenu()
     time.sleep(sleep_timer)
+
 # clear screen + kill buffers
 mywin.close()
 if platform.system() == 'Windows':
