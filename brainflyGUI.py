@@ -56,9 +56,9 @@ def setupOS():
     # setup video drivers
     if platform.system() == 'Windows':
         os.environ['SDL_VIDEODRIVER'] = 'windib'#'directx'
-        sleep_timer=0.08
+        sleep_timer=0.09
     else:
-        sleep_timer=0
+        sleep_timer=0.09
         os.environ['SDL_VIDEODRIVER'] = 'quartz'
     return sleep_timer
 
